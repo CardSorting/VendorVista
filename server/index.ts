@@ -1,11 +1,33 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { auth } from "express-openid-connect";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
+import { pool } from "./db.js";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Database-backed session configuration
+const PgSession = connectPgSimple(session);
+
+app.use(session({
+  store: new PgSession({
+    pool: pool,
+    tableName: 'session',
+    createTableIfMissing: true
+  }),
+  secret: process.env.SESSION_SECRET || 'fallback-secret-key-for-development',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // Set to true in production with HTTPS
+    httpOnly: true,
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+  }
+}));
 
 // Auth0 configuration
 const config = {
