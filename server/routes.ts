@@ -6,58 +6,49 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Authentication routes
-  app.post("/api/auth/register", async (req, res) => {
+  // Auth0 Authentication routes
+  app.get("/api/auth/me", async (req, res) => {
     try {
-      const data = registerSchema.parse(req.body);
-      
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(data.email);
-      if (existingUser) {
-        return res.status(400).json({ message: "User already exists with this email" });
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const existingUsername = await storage.getUserByUsername(data.username);
-      if (existingUsername) {
-        return res.status(400).json({ message: "Username already taken" });
+      const auth0User = req.oidc.user;
+      
+      if (!auth0User || !auth0User.email) {
+        return res.status(400).json({ error: "Invalid user data from Auth0" });
+      }
+      
+      // Check if user exists in our database
+      let user = await storage.getUserByEmail(auth0User.email);
+      
+      if (!user) {
+        // Create new user from Auth0 profile
+        user = await storage.createUser({
+          username: auth0User.nickname || auth0User.email.split('@')[0],
+          email: auth0User.email,
+          password: '', // Not needed for Auth0 users
+          firstName: auth0User.given_name || null,
+          lastName: auth0User.family_name || null,
+          avatarUrl: auth0User.picture || null,
+        });
       }
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(data.password, 10);
-      
-      const user = await storage.createUser({
-        ...data,
-        password: hashedPassword,
+      res.json({ 
+        user: { ...user, password: undefined },
+        isAuthenticated: true 
       });
-
-      // Remove password from response
-      const { password, ...userResponse } = user;
-      res.json(userResponse);
     } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : "Registration failed" });
+      console.error("Get user error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
-  app.post("/api/auth/login", async (req, res) => {
-    try {
-      const data = loginSchema.parse(req.body);
-      
-      const user = await storage.getUserByEmail(data.email);
-      if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      const isValidPassword = await bcrypt.compare(data.password, user.password);
-      if (!isValidPassword) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      // Remove password from response
-      const { password, ...userResponse } = user;
-      res.json(userResponse);
-    } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : "Login failed" });
-    }
+  app.get("/api/auth/status", (req, res) => {
+    res.json({ 
+      isAuthenticated: req.oidc.isAuthenticated(),
+      user: req.oidc.isAuthenticated() ? req.oidc.user : null
+    });
   });
 
   // User routes

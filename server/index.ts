@@ -1,10 +1,29 @@
 import express, { type Request, Response, NextFunction } from "express";
+import { auth } from "express-openid-connect";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Auth0 configuration
+const config = {
+  authRequired: false,
+  auth0Logout: true,
+  secret: process.env.AUTH0_SECRET,
+  baseURL: process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 'http://localhost:5000',
+  clientID: '1KVvM9Rfr8lWUgYyVRFBCxxaWZurH7se',
+  issuerBaseURL: 'https://dev-57c4wim3kish0u23.us.auth0.com',
+  routes: {
+    login: '/auth/login',
+    logout: '/auth/logout',
+    callback: '/auth/callback',
+  },
+};
+
+// Auth router attaches /auth/login, /auth/logout, and /auth/callback routes
+app.use(auth(config));
 
 app.use((req, res, next) => {
   const start = Date.now();

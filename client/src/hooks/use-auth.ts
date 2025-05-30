@@ -8,71 +8,47 @@ interface AuthState {
 }
 
 export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isLoading: true,
-    isAuthenticated: false,
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored user session
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-        setAuthState({
-          user,
-          isLoading: false,
-          isAuthenticated: true,
-        });
-      } catch (error) {
-        localStorage.removeItem("user");
-        setAuthState({
-          user: null,
-          isLoading: false,
-          isAuthenticated: false,
-        });
-      }
-    } else {
-      setAuthState({
-        user: null,
-        isLoading: false,
-        isAuthenticated: false,
-      });
-    }
+    checkAuthStatus();
   }, []);
 
-  const login = (user: User) => {
-    localStorage.setItem("user", JSON.stringify(user));
-    setAuthState({
-      user,
-      isLoading: false,
-      isAuthenticated: true,
-    });
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch("/api/auth/me");
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData.user);
+      }
+    } catch (error) {
+      console.log("Not authenticated");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const login = () => {
+    // Redirect to Auth0 login
+    window.location.href = "/auth/login";
   };
 
   const logout = () => {
-    localStorage.removeItem("user");
-    setAuthState({
-      user: null,
-      isLoading: false,
-      isAuthenticated: false,
-    });
+    // Redirect to Auth0 logout
+    window.location.href = "/auth/logout";
   };
 
   const updateUser = (updates: Partial<User>) => {
-    if (authState.user) {
-      const updatedUser = { ...authState.user, ...updates };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      setAuthState(prev => ({
-        ...prev,
-        user: updatedUser,
-      }));
+    if (user) {
+      setUser({ ...user, ...updates });
     }
   };
 
   return {
-    ...authState,
+    user,
+    isLoading,
+    isAuthenticated: !!user,
     login,
     logout,
     updateUser,
