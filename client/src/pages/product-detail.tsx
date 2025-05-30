@@ -106,6 +106,8 @@ export default function ProductDetail() {
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb Navigation */}
         <div className="flex items-center gap-2 text-sm text-gray-600 mb-8">
+          <Link href="/" className="hover:text-blue-600">Home</Link>
+          <span>/</span>
           <Link href="/browse" className="hover:text-blue-600">Browse</Link>
           <span>/</span>
           {artwork && (

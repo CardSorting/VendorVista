@@ -89,7 +89,7 @@ export function ProductSelector({ artworkId, onProductSelect, showAddToCart = tr
     );
   }
 
-  const availableProducts = products.filter((product: any) => product.isActive);
+  const availableProducts = Array.isArray(products) ? products.filter((product: any) => product.isActive) : [];
 
   if (availableProducts.length === 0) {
     return (

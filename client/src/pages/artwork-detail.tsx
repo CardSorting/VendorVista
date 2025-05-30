@@ -179,6 +179,21 @@ export default function ArtworkDetail() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center gap-2 text-sm text-gray-600 mb-8">
+        <Link href="/" className="hover:text-blue-600">Home</Link>
+        <span>/</span>
+        <Link href="/browse" className="hover:text-blue-600">Browse</Link>
+        {category && (
+          <>
+            <span>/</span>
+            <span className="text-gray-500">{category.name}</span>
+          </>
+        )}
+        <span>/</span>
+        <span className="text-gray-900">{artwork.title}</span>
+      </div>
+
       {/* Back Button */}
       <div className="mb-8">
         <Button
