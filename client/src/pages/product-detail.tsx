@@ -23,7 +23,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
 
   const { data: product, isLoading: productLoading } = useQuery({
-    queryKey: ["/api/product", productId],
+    queryKey: [`/api/product/${productId}`],
     enabled: !!productId,
   });
 
