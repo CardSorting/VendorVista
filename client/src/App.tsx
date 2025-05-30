@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
+import { LoadingScreen } from "@/components/loading-screen";
+import { PageTransition } from "@/components/page-transition";
 import { useAuth } from "@/hooks/use-auth";
 
 // Pages
@@ -25,31 +27,29 @@ function Router() {
   const { isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-apple-blue"></div>
-      </div>
-    );
+    return <LoadingScreen message="Preparing your experience..." />;
   }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navigation />
       <main className="flex-1">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/browse" component={Browse} />
-          <Route path="/artwork/:id" component={ArtworkDetail} />
-          <Route path="/artist/:id" component={ArtistProfile} />
-          <Route path="/artist/dashboard" component={ArtistDashboard} />
-          <Route path="/cart" component={Cart} />
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/orders" component={Orders} />
-          <Route path="/orders/:id" component={OrderDetail} />
-          <Route path="/profile" component={Profile} />
-          <Route path="/auth" component={Auth} />
-          <Route component={NotFound} />
-        </Switch>
+        <PageTransition>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/browse" component={Browse} />
+            <Route path="/artwork/:id" component={ArtworkDetail} />
+            <Route path="/artist/:id" component={ArtistProfile} />
+            <Route path="/artist/dashboard" component={ArtistDashboard} />
+            <Route path="/cart" component={Cart} />
+            <Route path="/checkout" component={Checkout} />
+            <Route path="/orders" component={Orders} />
+            <Route path="/orders/:id" component={OrderDetail} />
+            <Route path="/profile" component={Profile} />
+            <Route path="/auth" component={Auth} />
+            <Route component={NotFound} />
+          </Switch>
+        </PageTransition>
       </main>
       <Footer />
     </div>
