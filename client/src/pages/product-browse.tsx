@@ -305,9 +305,11 @@ function ProductCard({ product, viewMode }: { product: Product; viewMode: "grid"
             </h3>
             <p className="text-sm text-gray-600">by {product.artwork.artist.displayName}</p>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                {product.productType.name}
-              </Badge>
+              {product.productType && (
+                <Badge variant="outline" className="text-xs">
+                  {product.productType.name}
+                </Badge>
+              )}
               {product.artwork.category && (
                 <Badge variant="outline" className="text-xs">
                   {product.artwork.category.name}
