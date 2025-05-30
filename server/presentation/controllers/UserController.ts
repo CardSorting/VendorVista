@@ -35,7 +35,16 @@ export class UserController {
   // Command endpoints (write operations)
   async createUser(req: Request, res: Response): Promise<void> {
     try {
-      const command = insertUserSchema.parse(req.body);
+      const parsedData = insertUserSchema.parse(req.body);
+      const command = {
+        username: parsedData.username,
+        email: parsedData.email,
+        password: parsedData.password,
+        firstName: parsedData.firstName || undefined,
+        lastName: parsedData.lastName || undefined,
+        bio: parsedData.bio || undefined,
+        avatarUrl: parsedData.avatarUrl || undefined
+      };
       const user = await this.createUserHandler.handle(command);
       res.status(201).json(user);
     } catch (error) {
@@ -45,7 +54,14 @@ export class UserController {
 
   async createArtist(req: Request, res: Response): Promise<void> {
     try {
-      const command = insertArtistSchema.parse(req.body);
+      const parsedData = insertArtistSchema.parse(req.body);
+      const command = {
+        userId: parsedData.userId,
+        displayName: parsedData.displayName,
+        bio: parsedData.bio || undefined,
+        specialties: parsedData.specialties || undefined,
+        portfolioUrl: parsedData.portfolioUrl || undefined
+      };
       const artist = await this.createArtistHandler.handle(command);
       res.status(201).json(artist);
     } catch (error) {
