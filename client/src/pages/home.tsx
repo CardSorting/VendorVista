@@ -35,31 +35,32 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden gradient-apple-light">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8 animate-fade-in">
-              <div className="space-y-4">
-                <h1 className="text-5xl lg:text-6xl font-bold apple-gray leading-tight">
+      {/* Hero Section - Apple-inspired clean design */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-background via-secondary/20 to-background">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-10 animate-fade-in">
+              <div className="space-y-6">
+                <h1 className="apple-title text-5xl lg:text-7xl leading-[0.9] tracking-tight">
                   Where Art Meets
-                  <span className="text-transparent bg-clip-text gradient-coral-purple bg-gradient-to-r from-[hsl(var(--artist-coral))] to-[hsl(var(--artist-purple))]">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[hsl(var(--artist-coral))] via-[hsl(var(--artist-purple))] to-[hsl(var(--primary))]">
                     {" "}Commerce
                   </span>
                 </h1>
-                <p className="text-xl text-gray-600 leading-relaxed">
-                  Discover unique artwork from independent artists worldwide. Transform creative visions into beautiful products that tell your story.
+                <p className="apple-subtitle text-xl leading-relaxed max-w-lg">
+                  Discover extraordinary artwork from independent creators worldwide. Transform creative visions into premium products.
                 </p>
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/browse">
-                  <Button size="lg" className="bg-apple-blue text-white hover:bg-blue-600 transform hover:scale-105 transition-all duration-200">
+                  <Button size="lg" className="apple-button text-lg px-8 py-4">
                     Explore Artwork
                   </Button>
                 </Link>
                 <Link href="/auth?mode=register">
-                  <Button variant="outline" size="lg" className="border-artist-coral text-artist-coral hover:bg-artist-coral hover:text-white transition-all duration-200">
+                  <Button variant="outline" size="lg" className="apple-button-secondary text-lg px-8 py-4 border-2">
                     Become an Artist
                   </Button>
                 </Link>
