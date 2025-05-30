@@ -22,6 +22,8 @@ export function ProductSelector({ artworkId, onProductSelect, showAddToCart = tr
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["/api/products/artwork", artworkId],
+    queryFn: () => fetch(`/api/products/artwork/${artworkId}`).then(res => res.json()),
+    enabled: !!artworkId,
   });
 
   const { data: productTypes = [] } = useQuery({

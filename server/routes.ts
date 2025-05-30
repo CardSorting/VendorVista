@@ -237,10 +237,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products/artwork/:artworkId", async (req, res) => {
     try {
       const artworkId = parseInt(req.params.artworkId);
+      console.log(`Fetching products for artwork ID: ${artworkId}`);
       const products = await storage.getProductsByArtwork(artworkId);
+      console.log(`Found ${products.length} products for artwork ${artworkId}`);
       res.json(products);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch products" });
+      console.error("Error fetching products by artwork:", error);
+      res.status(500).json({ message: "Failed to fetch products", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
