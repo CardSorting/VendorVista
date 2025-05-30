@@ -36,7 +36,7 @@ async function seedDatabase() {
       { name: "Digital Download", basePrice: "5.00", description: "High-resolution digital files" }
     ];
 
-    await db.insert(productTypes).values(productTypeData);
+    const insertedProductTypes = await db.insert(productTypes).values(productTypeData).returning();
     console.log("✓ Product types seeded");
 
     // Seed users
@@ -162,33 +162,41 @@ async function seedDatabase() {
     const insertedArtwork = await db.insert(artwork).values(artworkData).returning();
     console.log("✓ Artwork seeded");
 
-    // Seed products for each artwork
+    // Seed products for each artwork using actual product type IDs
     const productData = [];
+    const printType = insertedProductTypes.find(pt => pt.name === "Print");
+    const canvasType = insertedProductTypes.find(pt => pt.name === "Canvas");
+    const digitalType = insertedProductTypes.find(pt => pt.name === "Digital Download");
+    
     for (const art of insertedArtwork) {
       // Add 3 product types for each artwork
-      productData.push(
-        {
+      if (printType) {
+        productData.push({
           artworkId: art.id,
-          productTypeId: 1, // Print
+          productTypeId: printType.id,
           price: "25.00",
           artistMargin: "10.00",
           isActive: true
-        },
-        {
+        });
+      }
+      if (canvasType) {
+        productData.push({
           artworkId: art.id,
-          productTypeId: 2, // Canvas
+          productTypeId: canvasType.id,
           price: "65.00",
           artistMargin: "20.00",
           isActive: true
-        },
-        {
+        });
+      }
+      if (digitalType) {
+        productData.push({
           artworkId: art.id,
-          productTypeId: 5, // Digital Download
+          productTypeId: digitalType.id,
           price: "8.00",
           artistMargin: "3.00",
           isActive: true
-        }
-      );
+        });
+      }
     }
 
     await db.insert(products).values(productData);
