@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Search, Heart, ShoppingCart, Menu, User, Plus } from "lucide-react";
+import { Search, Heart, ShoppingCart, Menu, User, Plus, Filter, Shirt, Coffee, Phone, Gift, Star, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
+import { useQuery } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +22,10 @@ export function Navigation() {
   const { user, isAuthenticated, logout } = useAuth();
   const { cartCount } = useCart();
 
+  const { data: categories = [] } = useQuery({
+    queryKey: ["/api/categories"],
+  });
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -28,49 +33,119 @@ export function Navigation() {
     }
   };
 
-  const navLinks = [
-    { href: "/browse", label: "Browse" },
-    { href: "/artists", label: "Artists" },
+  const productCategories = [
+    { name: "T-Shirts", icon: Shirt, href: "/browse?product=t-shirts" },
+    { name: "Mugs", icon: Coffee, href: "/browse?product=mugs" },
+    { name: "Phone Cases", icon: Phone, href: "/browse?product=phone-cases" },
+    { name: "Stickers", icon: Star, href: "/browse?product=stickers" },
+    { name: "Gifts", icon: Gift, href: "/browse?product=gifts" },
+  ];
+
+  const quickLinks = [
+    { href: "/browse?trending=true", label: "Trending", badge: "Hot" },
+    { href: "/browse?new=true", label: "New Arrivals" },
+    { href: "/browse?sale=true", label: "On Sale", badge: "Save" },
   ];
 
   return (
-    <header className="sticky top-0 z-50 glass border-b">
+    <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
+      {/* Top Bar - Ecommerce Style */}
+      <div className="bg-blue-600 text-white py-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center text-sm">
+            <div className="hidden sm:flex items-center space-x-6">
+              <span className="flex items-center">
+                <Star className="h-3 w-3 mr-1" />
+                Free shipping on orders over $50
+              </span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link href="/help" className="hover:text-blue-200 transition-colors">Help</Link>
+              <Link href="/track-order" className="hover:text-blue-200 transition-colors">Track Order</Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navigation */}
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
-            <h1 className="text-2xl font-bold apple-gray">
-              <span className="artist-coral">Artist</span>Market
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              <span className="text-blue-600">Artist</span>Market
             </h1>
           </Link>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-lg mx-8 hidden md:block">
+          {/* Enhanced Search Bar */}
+          <div className="flex-1 max-w-2xl mx-4 lg:mx-8">
             <form onSubmit={handleSearch} className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-                <Search className="h-4 w-4 text-gray-400" />
+              <div className="flex">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="rounded-l-full border-r-0 px-3 sm:px-4 bg-gray-50 hover:bg-gray-100">
+                      <Grid3X3 className="h-4 w-4" />
+                      <span className="hidden sm:inline ml-2">All</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href="/browse" className="flex items-center">
+                        <Grid3X3 className="h-4 w-4 mr-2" />
+                        All Products
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {productCategories.map((category) => (
+                      <DropdownMenuItem key={category.name} asChild>
+                        <Link href={category.href} className="flex items-center">
+                          <category.icon className="h-4 w-4 mr-2" />
+                          {category.name}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
+                <div className="relative flex-1">
+                  <Input
+                    type="text"
+                    placeholder="Search for designs, products, or artists..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="rounded-none border-l-0 border-r-0 focus:ring-0 focus:border-blue-500 pl-4 pr-12"
+                  />
+                  <Button 
+                    type="submit"
+                    className="absolute right-0 top-0 bottom-0 rounded-r-full px-4 sm:px-6 bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Search className="h-4 w-4" />
+                    <span className="hidden sm:inline ml-2">Search</span>
+                  </Button>
+                </div>
               </div>
-              <Input
-                type="text"
-                placeholder="Search artwork, artists, or products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-apple-light/50 border-gray-200 rounded-full focus:ring-2 focus:ring-apple-blue focus:border-transparent"
-              />
             </form>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-gray-700 hover:text-apple-blue transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+          {/* Desktop Navigation - Right Side */}
+          <div className="flex items-center space-x-4">
+            {/* Quick Links */}
+            <div className="hidden lg:flex items-center space-x-6">
+              {quickLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center"
+                >
+                  {link.label}
+                  {link.badge && (
+                    <Badge className="ml-1 bg-red-500 text-white text-xs px-1">
+                      {link.badge}
+                    </Badge>
+                  )}
+                </Link>
+              ))}
+            </div>
 
             {isAuthenticated && (
               <>
@@ -187,13 +262,31 @@ export function Navigation() {
                     />
                   </form>
 
-                  {navLinks.map((link) => (
+                  {/* Mobile Product Categories */}
+                  {productCategories.slice(0, 4).map((category) => (
+                    <Link
+                      key={category.name}
+                      href={category.href}
+                      className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors py-2 flex items-center"
+                    >
+                      <category.icon className="h-4 w-4 mr-2" />
+                      {category.name}
+                    </Link>
+                  ))}
+                  
+                  {/* Mobile Quick Links */}
+                  {quickLinks.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
-                      className="text-sm font-medium text-gray-700 hover:text-apple-blue transition-colors py-2"
+                      className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors py-2 flex items-center"
                     >
                       {link.label}
+                      {link.badge && (
+                        <Badge className="ml-2 bg-red-500 text-white text-xs px-1">
+                          {link.badge}
+                        </Badge>
+                      )}
                     </Link>
                   ))}
 
