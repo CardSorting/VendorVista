@@ -1,0 +1,111 @@
+
+https://myapp.org/login
+
+In some scenarios, Auth0 will need to redirect to your application’s login page. This URI needs to point to a route in your application that should redirect to your tenant’s /authorizeendpoint. Learn more
+
+https://vendor-vista-0xjzy.replit.app/auth/callback
+
+After the user authenticates we will only call back to any of these URLs. You can specify multiple valid URLs by comma-separating them (typically to handle different environments like QA or testing). Make sure to specify the protocol (https://) otherwise the callback may fail in some cases. With the exception of custom URI schemes for native clients, all callbacks should use protocol https://.You can use Organization URL
+ parameters in these URLs.
+
+https://vendor-vista-0xjzy.replit.app
+
+Comma-separated list of allowed logout URLs for redirecting users post-logout. You can use wildcards at the subdomain level (*.google.com). Query strings and hash information are not taken into account when validating these URLs. Learn more about logout
+
+https://vendor-vista-0xjzy.replit.app
+
+Comma-separated list of allowed origins for use with Cross-Origin Authentication
+, Device Flow
+, and web message response mode
+, in the form of <scheme>://<host>[:<port>], such as https://login.mydomain.com or http://localhost:3000. You can use wildcards at the subdomain level (e.g.: https://*.contoso.com). Query strings and hash information are not taken into account when validating these URLs.
+
+
+OpenID Connect Back-Channel Logout
+EnterpriseLearn more about OpenID Connect Back-Channel Logout
+
+
+Enterprise subscription is required.
+
+
+Selected initiators only
+
+All supported initiators
+
+Enterprise subscription is required.
+
+IdP-Logout
+
+Required
+RP-Logout
+
+Required
+Password Changed
+
+Session Expired
+
+Account Deleted
+
+Email Changed
+
+Session Revoked
+
+Account Deactivated
+
+
+Cross-Origin Authentication
+When allowed, cross-origin authentication
+ allows applications to make authentication requests when the Lock widget or custom HTML is used.
+
+
+List additional origins allowed to make cross-origin resource sharing (CORS)
+ requests. Allowed callback URLs are already included in this list.
+URLs can be comma-separated or added line-by-line
+Use wildcards (*) at the subdomain level (e.g. https://*.contoso.com)
+Query strings and hash information are ignored
+Organization URL
+ placeholders are supported
+
+
+Fallback URL when third-party cookies are not enabled in the browser. URL must use https and be in the same domain as the embedded login widget.
+
+
+ID Token Expiration
+36000
+seconds
+
+
+Time until an id_token expires regardless of activity.
+
+
+Refresh Token Expiration
+Require refresh tokens to expire after a set period of inactivity. Learn more about refresh token expiration
+
+2592000
+seconds
+
+
+Require refresh tokens to expire after a set period regardless of activity. Required for refresh token rotation. Learn more about refresh token expiration
+
+31557600
+seconds
+
+
+
+Refresh Token Rotation
+When allowed, refresh tokens will automatically be invalidated after use and exchanged for new tokens to prevent replay attacks. Requires a maximum refresh token lifetime. Learn more about refresh token rotation
+
+0
+seconds
+
+
+Period of time the most recently-used refresh token can be reused without triggering breach detection.
+
+
+Token Sender-Constraining
+When required, access tokens must be constrained to this application to prevent unauthorized use of leaked or stolen tokens. Learn more about token sender-constraining
+
+
+Authorization Requests
+When required, authorization request parameters must be sent using back-channel communication for confidentiality and integrity protection. Requires tenant to allow PAR. Learn more about Pushed Authorizarion Requests (PAR)
+
+When required, authorization request parameters must be wrapped in a signed JSON Web Token (JWT) for cryptographically confirmed non-repudiation. Learn more about JWT-Secured Authorizarion Requests (JAR)
