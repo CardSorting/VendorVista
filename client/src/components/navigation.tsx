@@ -149,12 +149,12 @@ export function Navigation() {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link href="/auth?mode=login">
+                <Link href="/auth">
                   <Button variant="outline" size="sm" className="bg-apple-blue text-white hover:bg-blue-600">
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/auth?mode=register">
+                <Link href="/auth">
                   <Button size="sm" className="bg-artist-coral text-white hover:bg-red-500">
                     Start Selling
                   </Button>
@@ -242,12 +242,12 @@ export function Navigation() {
                     </>
                   ) : (
                     <>
-                      <Link href="/auth?mode=login">
+                      <Link href="/auth">
                         <Button variant="outline" className="w-full">
                           Sign In
                         </Button>
                       </Link>
-                      <Link href="/auth?mode=register">
+                      <Link href="/auth">
                         <Button className="w-full bg-artist-coral text-white hover:bg-red-500">
                           Start Selling
                         </Button>
