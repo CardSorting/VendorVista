@@ -67,6 +67,36 @@
 }
 
 @layer components {
+  /* Apple-style components following their design philosophy */
+  .apple-button {
+    @apply px-6 py-3 rounded-xl font-medium transition-all duration-200 ease-out;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+    @apply shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+  }
+
+  .apple-button-secondary {
+    @apply px-6 py-3 rounded-xl font-medium transition-all duration-200 ease-out;
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+    @apply border border-border hover:border-primary/30;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+  }
+
+  .apple-input {
+    @apply px-4 py-3 rounded-xl border-2 border-input;
+    @apply focus:border-primary focus:ring-0 transition-all duration-200;
+    @apply bg-background/50 backdrop-blur-sm;
+    @apply placeholder:text-muted-foreground;
+  }
+
+  .apple-card {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+    @apply rounded-2xl shadow-xl;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-2xl hover:-translate-y-1;
+  }
+
+  /* Artist-specific design elements */
   .artist-coral {
     @apply text-[hsl(var(--artist-coral))];
   }
@@ -113,6 +143,28 @@
   
   .bg-apple-blue {
     @apply bg-[hsl(var(--apple-blue))];
+  }
+
+  /* Apple-style navigation */
+  .apple-nav {
+    @apply bg-background/80 backdrop-blur-xl border-b border-border/50;
+    @apply sticky top-0 z-50;
+  }
+
+  /* Apple-style typography hierarchy */
+  .apple-title {
+    @apply text-4xl font-bold tracking-tight text-foreground;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+
+  .apple-subtitle {
+    @apply text-xl font-medium text-muted-foreground;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+
+  .apple-body {
+    @apply text-base leading-relaxed text-foreground;
+    font-feature-settings: 'kern' 1, 'liga' 1;
   }
 }
 
