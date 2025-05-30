@@ -10,29 +10,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-
-interface ProductVariant {
-  id: string;
-  name: string;
-  priceModifier: number;
-  isAvailable: boolean;
-}
-
-interface Product {
-  id: number;
-  artworkId: number;
-  productTypeId: number;
-  basePrice: string;
-  variants: ProductVariant[];
-  isAvailable: boolean;
-}
-
-interface ProductType {
-  id: number;
-  name: string;
-  description: string;
-  basePrice: string;
-}
+import type { Product, ProductType, Artwork, Artist } from "@shared/schema";
 
 export default function ProductDetail() {
   const { productId } = useParams<{ productId: string }>();
@@ -42,36 +20,31 @@ export default function ProductDetail() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const [selectedVariant, setSelectedVariant] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
 
-  const { data: product, isLoading: productLoading } = useQuery({
+  const { data: product, isLoading: productLoading } = useQuery<Product>({
     queryKey: ["/api/products", productId],
     enabled: !!productId,
   });
 
-  const { data: artwork } = useQuery({
+  const { data: artwork } = useQuery<Artwork>({
     queryKey: ["/api/artwork", product?.artworkId],
     enabled: !!product?.artworkId,
   });
 
-  const { data: productType } = useQuery({
+  const { data: productType } = useQuery<ProductType>({
     queryKey: ["/api/product-types", product?.productTypeId],
     enabled: !!product?.productTypeId,
   });
 
-  const { data: artist } = useQuery({
+  const { data: artist } = useQuery<Artist>({
     queryKey: ["/api/artists", artwork?.artistId],
     enabled: !!artwork?.artistId,
   });
 
   const addToCartMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedVariant) {
-        throw new Error("Please select a variant");
-      }
-      
-      return addToCart(parseInt(productId!), quantity);
+      return addToCart({ productId: parseInt(productId!), quantity });
     },
     onSuccess: () => {
       toast({
@@ -126,18 +99,7 @@ export default function ProductDetail() {
     );
   }
 
-  const calculatePrice = () => {
-    const basePrice = parseFloat(product.basePrice);
-    if (selectedVariant) {
-      const variant = product.variants.find(v => v.id === selectedVariant);
-      if (variant) {
-        return basePrice + variant.priceModifier;
-      }
-    }
-    return basePrice;
-  };
-
-  const finalPrice = calculatePrice();
+  const finalPrice = product ? parseFloat(product.price) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -216,35 +178,6 @@ export default function ProductDetail() {
 
             {/* Product Options */}
             <div className="space-y-4">
-              {product.variants && product.variants.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Size/Style
-                  </label>
-                  <Select value={selectedVariant} onValueChange={setSelectedVariant}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select size/style" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {product.variants.map((variant) => (
-                        <SelectItem 
-                          key={variant.id} 
-                          value={variant.id}
-                          disabled={!variant.isAvailable}
-                        >
-                          {variant.name} 
-                          {variant.priceModifier !== 0 && (
-                            <span className="text-gray-500">
-                              (+${variant.priceModifier.toFixed(2)})
-                            </span>
-                          )}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Quantity
@@ -268,7 +201,7 @@ export default function ProductDetail() {
             <div className="space-y-3">
               <Button
                 onClick={() => addToCartMutation.mutate()}
-                disabled={!product.isAvailable || addToCartMutation.isPending || (!selectedVariant && product.variants.length > 0)}
+                disabled={!product.isActive || addToCartMutation.isPending}
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3"
                 size="lg"
               >
@@ -276,7 +209,7 @@ export default function ProductDetail() {
                 {addToCartMutation.isPending ? "Adding..." : "Add to Cart"}
               </Button>
               
-              {!product.isAvailable && (
+              {!product.isActive && (
                 <p className="text-sm text-red-600 text-center">
                   This product is currently unavailable
                 </p>

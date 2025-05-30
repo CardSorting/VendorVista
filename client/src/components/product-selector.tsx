@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Plus } from "lucide-react";
+import { Check, Plus, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 
 interface ProductSelectorProps {
   artworkId: number;
