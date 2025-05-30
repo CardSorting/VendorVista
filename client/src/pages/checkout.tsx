@@ -1,93 +1,161 @@
-import { useState } from "react";
-import { Link, useLocation } from "wouter";
-import { ArrowLeft, CreditCard, Truck, Shield, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useAuth } from "@/hooks/use-auth";
-import { useCart } from "@/hooks/use-cart";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { toast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { z } from "zod";
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/use-auth';
+import { useCart } from '@/hooks/use-cart';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import type { CartItemWithDetails } from '@/lib/types';
 
-const checkoutSchema = z.object({
-  email: z.string().email(),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  address: z.string().min(1, "Address is required"),
-  city: z.string().min(1, "City is required"),
-  state: z.string().min(1, "State is required"),
-  zipCode: z.string().min(1, "ZIP code is required"),
-  country: z.string().min(1, "Country is required"),
-  paymentMethod: z.enum(["card", "paypal"], {
-    required_error: "Please select a payment method",
-  }),
+const shippingAddressSchema = z.object({
+  fullName: z.string().min(1, 'Full name is required'),
+  addressLine1: z.string().min(1, 'Address is required'),
+  addressLine2: z.string().optional(),
+  city: z.string().min(1, 'City is required'),
+  state: z.string().min(1, 'State is required'),
+  postalCode: z.string().min(1, 'Postal code is required'),
+  country: z.string().min(1, 'Country is required')
 });
 
-type CheckoutData = z.infer<typeof checkoutSchema>;
+type ShippingAddressForm = z.infer<typeof shippingAddressSchema>;
 
 export default function Checkout() {
+  const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
-  const [, setLocation] = useLocation();
-  const { cartItems, cartTotal, cartCount } = useCart();
+  const { items: cartItems, clearCart } = useCart();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const form = useForm<CheckoutData>({
-    resolver: zodResolver(checkoutSchema),
+  const form = useForm<ShippingAddressForm>({
+    resolver: zodResolver(shippingAddressSchema),
     defaultValues: {
-      email: user?.email || "",
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      address: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "United States",
-      paymentMethod: "card",
-    },
+      fullName: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '',
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'United States'
+    }
   });
 
+  // Calculate totals
+  const subtotal = cartItems.reduce((sum, item) => {
+    const price = parseFloat(item.product.price);
+    const quantity = item.quantity || 1;
+    return sum + (price * quantity);
+  }, 0);
+
+  const shipping = subtotal > 50 ? 0 : 9.99; // Free shipping over $50
+  const tax = subtotal * 0.08; // 8% tax
+  const total = subtotal + shipping + tax;
+
   const createOrderMutation = useMutation({
-    mutationFn: async (orderData: any) => {
-      const response = await apiRequest("POST", "/api/orders", orderData);
-      return response.json();
-    },
-    onSuccess: (order) => {
-      toast({
-        title: "Order placed successfully!",
-        description: `Your order #${order.id} has been confirmed`,
+    mutationFn: async (data: ShippingAddressForm) => {
+      return apiRequest('/api/orders', {
+        method: 'POST',
+        body: JSON.stringify({
+          shippingAddress: data
+        })
       });
-      setLocation(`/orders/${order.id}`);
+    },
+    onSuccess: async (order) => {
+      // Process payment
+      try {
+        const paymentResponse = await apiRequest(`/api/orders/${order.id}/payment`, {
+          method: 'POST',
+          body: JSON.stringify({})
+        });
+
+        // In a real implementation, you would integrate with Stripe or another payment processor here
+        // For now, we'll simulate a successful payment
+        
+        await apiRequest(`/api/orders/${order.id}/confirm`, {
+          method: 'POST',
+          body: JSON.stringify({
+            paymentIntentId: 'pi_simulated_success'
+          })
+        });
+
+        // Clear cart and redirect to success page
+        clearCart();
+        queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+        
+        toast({
+          title: "Order placed successfully!",
+          description: `Your order #${order.id} has been confirmed.`
+        });
+
+        navigate(`/orders/${order.id}`);
+      } catch (error) {
+        toast({
+          title: "Payment failed",
+          description: "There was an issue processing your payment. Please try again.",
+          variant: "destructive"
+        });
+      }
     },
     onError: (error) => {
       toast({
-        title: "Order failed",
-        description: error instanceof Error ? error.message : "Failed to place order",
-        variant: "destructive",
+        title: "Order creation failed",
+        description: error.message,
+        variant: "destructive"
       });
-    },
+    }
   });
+
+  const onSubmit = async (data: ShippingAddressForm) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Please sign in",
+        description: "You need to sign in to place an order.",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      toast({
+        title: "Cart is empty",
+        description: "Add items to your cart before checking out.",
+        variant: "destructive"
+      });
+      navigate('/cart');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      await createOrderMutation.mutateAsync(data);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card>
-          <CardContent className="pt-6 text-center py-16">
-            <h2 className="text-2xl font-bold apple-gray mb-4">Sign in to checkout</h2>
-            <p className="text-gray-600 mb-6">You need to be signed in to complete your purchase.</p>
-            <Link href="/auth?mode=login">
-              <Button className="bg-apple-blue text-white hover:bg-blue-600">
-                Sign In
-              </Button>
-            </Link>
+      <div className="container mx-auto px-4 py-8">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle>Sign In Required</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Please sign in to continue with checkout.
+            </p>
+            <Button onClick={() => navigate('/auth')} className="w-full">
+              Sign In
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -96,368 +164,214 @@ export default function Checkout() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card>
-          <CardContent className="pt-6 text-center py-16">
-            <h2 className="text-2xl font-bold apple-gray mb-4">Your cart is empty</h2>
-            <p className="text-gray-600 mb-6">Add some items to your cart before checking out.</p>
-            <Link href="/browse">
-              <Button className="bg-apple-blue text-white hover:bg-blue-600">
-                Browse Artwork
-              </Button>
-            </Link>
+      <div className="container mx-auto px-4 py-8">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle>Cart is Empty</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Add some artwork to your cart before checking out.
+            </p>
+            <Button onClick={() => navigate('/browse')} className="w-full">
+              Browse Artwork
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const shippingCost = cartTotal >= 50 ? 0 : 5.99;
-  const totalAmount = cartTotal + shippingCost;
-
-  const onSubmit = async (data: CheckoutData) => {
-    setIsProcessing(true);
-    
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    const shippingAddress = `${data.firstName} ${data.lastName}\n${data.address}\n${data.city}, ${data.state} ${data.zipCode}\n${data.country}`;
-
-    const orderData = {
-      userId: user!.id,
-      totalAmount: totalAmount.toFixed(2),
-      shippingAddress,
-      cartItems: cartItems.map((item: any) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        price: item.product.price,
-      })),
-    };
-
-    createOrderMutation.mutate(orderData);
-    setIsProcessing(false);
-  };
-
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <Link href="/cart">
-          <Button variant="ghost" className="mb-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Cart
-          </Button>
-        </Link>
-        <h1 className="text-4xl font-bold apple-gray">Checkout</h1>
-      </div>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Checkout Form */}
-            <div className="space-y-6">
-              {/* Contact Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <div className="w-8 h-8 bg-apple-blue text-white rounded-full flex items-center justify-center mr-3 text-sm font-semibold">
-                      1
-                    </div>
-                    Contact Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email Address</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="john@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Shipping Address */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <div className="w-8 h-8 bg-apple-blue text-white rounded-full flex items-center justify-center mr-3 text-sm font-semibold">
-                      2
-                    </div>
-                    Shipping Address
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>First Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Shipping Information */}
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Shipping Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div>
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      {...form.register('fullName')}
+                      placeholder="Enter your full name"
                     />
+                    {form.formState.errors.fullName && (
+                      <p className="text-sm text-red-500 mt-1">
+                        {form.formState.errors.fullName.message}
+                      </p>
+                    )}
+                  </div>
 
-                    <FormField
-                      control={form.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Last Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                  <div>
+                    <Label htmlFor="addressLine1">Address Line 1</Label>
+                    <Input
+                      id="addressLine1"
+                      {...form.register('addressLine1')}
+                      placeholder="Street address"
+                    />
+                    {form.formState.errors.addressLine1 && (
+                      <p className="text-sm text-red-500 mt-1">
+                        {form.formState.errors.addressLine1.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="addressLine2">Address Line 2 (Optional)</Label>
+                    <Input
+                      id="addressLine2"
+                      {...form.register('addressLine2')}
+                      placeholder="Apartment, suite, etc."
                     />
                   </div>
 
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Address</FormLabel>
-                        <FormControl>
-                          <Input placeholder="123 Main St" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="city"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>City</FormLabel>
-                          <FormControl>
-                            <Input placeholder="New York" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="city">City</Label>
+                      <Input
+                        id="city"
+                        {...form.register('city')}
+                        placeholder="City"
+                      />
+                      {form.formState.errors.city && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {form.formState.errors.city.message}
+                        </p>
                       )}
-                    />
+                    </div>
 
-                    <FormField
-                      control={form.control}
-                      name="state"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>State</FormLabel>
-                          <FormControl>
-                            <Input placeholder="NY" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                    <div>
+                      <Label htmlFor="state">State</Label>
+                      <Input
+                        id="state"
+                        {...form.register('state')}
+                        placeholder="State"
+                      />
+                      {form.formState.errors.state && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {form.formState.errors.state.message}
+                        </p>
                       )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="zipCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>ZIP Code</FormLabel>
-                          <FormControl>
-                            <Input placeholder="10001" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    </div>
                   </div>
 
-                  <FormField
-                    control={form.control}
-                    name="country"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Country</FormLabel>
-                        <FormControl>
-                          <Input placeholder="United States" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Payment Method */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <div className="w-8 h-8 bg-apple-blue text-white rounded-full flex items-center justify-center mr-3 text-sm font-semibold">
-                      3
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="postalCode">Postal Code</Label>
+                      <Input
+                        id="postalCode"
+                        {...form.register('postalCode')}
+                        placeholder="ZIP Code"
+                      />
+                      {form.formState.errors.postalCode && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {form.formState.errors.postalCode.message}
+                        </p>
+                      )}
                     </div>
-                    Payment Method
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="paymentMethod"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="space-y-3"
-                          >
-                            <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                              <RadioGroupItem value="card" id="card" />
-                              <Label htmlFor="card" className="flex items-center space-x-3 flex-1 cursor-pointer">
-                                <CreditCard className="h-5 w-5 text-gray-500" />
-                                <div>
-                                  <div className="font-medium">Credit/Debit Card</div>
-                                  <div className="text-sm text-gray-500">Visa, Mastercard, American Express</div>
-                                </div>
-                              </Label>
-                            </div>
-                            
-                            <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                              <RadioGroupItem value="paypal" id="paypal" />
-                              <Label htmlFor="paypal" className="flex items-center space-x-3 flex-1 cursor-pointer">
-                                <div className="w-5 h-5 bg-blue-600 rounded text-white text-xs flex items-center justify-center font-bold">
-                                  P
-                                </div>
-                                <div>
-                                  <div className="font-medium">PayPal</div>
-                                  <div className="text-sm text-gray-500">Pay with your PayPal account</div>
-                                </div>
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-            </div>
 
-            {/* Order Summary */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Order Items */}
-                  <div className="space-y-4">
-                    {cartItems.map((item: any) => (
-                      <div key={item.id} className="flex items-center space-x-3">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                          <img
-                            src={item.product.artwork.imageUrl}
-                            alt={item.product.artwork.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium apple-gray truncate">
-                            {item.product.artwork.title}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {item.product.productType.name} × {item.quantity}
-                          </p>
-                        </div>
-                        <div className="font-medium">
-                          ${(parseFloat(item.product.price) * item.quantity).toFixed(2)}
-                        </div>
+                    <div>
+                      <Label htmlFor="country">Country</Label>
+                      <Input
+                        id="country"
+                        {...form.register('country')}
+                        placeholder="Country"
+                      />
+                      {form.formState.errors.country && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {form.formState.errors.country.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? 'Processing...' : `Place Order - $${total.toFixed(2)}`}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Order Summary */}
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="flex gap-4">
+                      <img
+                        src={item.product.artwork.imageUrl}
+                        alt={item.product.artwork.title}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <h4 className="font-medium">{item.product.artwork.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {item.product.productType.name} by {item.product.artwork.artist.displayName}
+                        </p>
+                        <p className="text-sm">
+                          Qty: {item.quantity} × ${item.product.price}
+                        </p>
                       </div>
-                    ))}
-                  </div>
+                      <div className="text-right">
+                        <p className="font-medium">
+                          ${(parseFloat(item.product.price) * (item.quantity || 1)).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
 
                   <Separator />
 
-                  {/* Price Breakdown */}
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Subtotal ({cartCount} items)</span>
-                      <span>${cartTotal.toFixed(2)}</span>
+                      <span>Subtotal</span>
+                      <span>${subtotal.toFixed(2)}</span>
                     </div>
-                    
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Shipping</span>
-                      <span>
-                        {shippingCost === 0 ? (
-                          <span className="text-artist-green">Free</span>
-                        ) : (
-                          `$${shippingCost.toFixed(2)}`
-                        )}
-                      </span>
+                      <span>Shipping</span>
+                      <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
                     </div>
-
+                    <div className="flex justify-between">
+                      <span>Tax</span>
+                      <span>${tax.toFixed(2)}</span>
+                    </div>
                     <Separator />
-
-                    <div className="flex justify-between text-lg font-semibold">
+                    <div className="flex justify-between font-bold text-lg">
                       <span>Total</span>
-                      <span className="apple-gray">${totalAmount.toFixed(2)}</span>
+                      <span>${total.toFixed(2)}</span>
                     </div>
                   </div>
 
-                  {/* Place Order Button */}
-                  <Button
-                    type="submit"
-                    disabled={isProcessing || createOrderMutation.isPending}
-                    className="w-full bg-artist-coral text-white hover:bg-red-500"
-                    size="lg"
-                  >
-                    {isProcessing || createOrderMutation.isPending ? (
-                      <>Processing...</>
-                    ) : (
-                      <>
-                        <Shield className="h-4 w-4 mr-2" />
-                        Complete Order
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Security Info */}
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="space-y-3 text-sm text-gray-600">
-                    <div className="flex items-center space-x-2">
-                      <Shield className="h-4 w-4 text-artist-green" />
-                      <span>SSL encrypted checkout</span>
+                  {shipping === 0 && (
+                    <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg">
+                      <p className="text-sm text-green-700 dark:text-green-300">
+                        🎉 You qualify for free shipping!
+                      </p>
                     </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Truck className="h-4 w-4 text-artist-green" />
-                      <span>Free returns within 30 days</span>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-artist-green" />
-                      <span>100% satisfaction guarantee</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </form>
-      </Form>
+        </div>
+      </div>
     </div>
   );
 }
