@@ -96,17 +96,20 @@ export function Navigation() {
                     <span className="hidden md:inline">{user?.username}</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
-                    <Link href="/profile">My Account</Link>
+                    <Link href="/profile" className="font-medium">Your Account</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/orders">My Orders</Link>
+                    <Link href="/orders">Your Orders</Link>
                   </DropdownMenuItem>
                   {user?.isArtist && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/artist/dashboard">Artist Dashboard</Link>
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/artist/dashboard">Artist Dashboard</Link>
+                      </DropdownMenuItem>
+                    </>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout}>
