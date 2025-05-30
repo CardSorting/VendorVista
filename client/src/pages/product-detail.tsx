@@ -100,14 +100,6 @@ export default function ProductDetail() {
           <span>/</span>
           <Link href="/browse" className="hover:text-blue-600">Browse</Link>
           <span>/</span>
-          {artwork && (
-            <>
-              <Link href={`/artwork/${artwork.id}`} className="hover:text-blue-600">
-                {artwork.title}
-              </Link>
-              <span>/</span>
-            </>
-          )}
           <span className="text-gray-900">{artwork?.title} - {productType?.name}</span>
         </div>
 
