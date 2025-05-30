@@ -515,6 +515,51 @@ export class DatabaseStorage implements IStorage {
       ));
     return !!like;
   }
+
+  // Product-focused query methods following CQRS pattern
+  async getAllProductsWithDetails(): Promise<any[]> {
+    const results = await db
+      .select()
+      .from(products)
+      .leftJoin(artwork, eq(products.artworkId, artwork.id))
+      .leftJoin(artists, eq(artwork.artistId, artists.id))
+      .leftJoin(categories, eq(artwork.categoryId, categories.id))
+      .leftJoin(productTypes, eq(products.productTypeId, productTypes.id))
+      .where(eq(products.isActive, true));
+    
+    // Transform the flat results into nested objects
+    return results.map((row: any) => ({
+      id: row.products.id,
+      artworkId: row.products.artworkId,
+      productTypeId: row.products.productTypeId,
+      price: row.products.price,
+      isActive: row.products.isActive,
+      artwork: {
+        id: row.artwork.id,
+        title: row.artwork.title,
+        imageUrl: row.artwork.imageUrl,
+        description: row.artwork.description,
+        tags: row.artwork.tags,
+        categoryId: row.artwork.categoryId,
+        isTrending: row.artwork.isTrending,
+        artist: {
+          id: row.artists.id,
+          displayName: row.artists.displayName,
+          isVerified: row.artists.isVerified,
+        },
+        category: row.categories ? {
+          id: row.categories.id,
+          name: row.categories.name,
+        } : null
+      },
+      productType: {
+        id: row.product_types.id,
+        name: row.product_types.name,
+        description: row.product_types.description,
+        basePrice: row.product_types.basePrice,
+      }
+    }));
+  }
 }
 
 export const storage = new DatabaseStorage();

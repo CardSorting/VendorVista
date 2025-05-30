@@ -224,6 +224,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced Product API Routes - Following Clean Architecture & CQRS
+  app.get("/api/products", async (req, res) => {
+    try {
+      const { 
+        categoryId, 
+        productTypeId, 
+        tags, 
+        minPrice, 
+        maxPrice, 
+        sortBy = 'featured', 
+        limit = 20, 
+        offset = 0,
+        q 
+      } = req.query;
+
+      // Query Handler - CQRS Read Side
+      const filters: any = {};
+      
+      if (categoryId && categoryId !== 'all') {
+        filters.categoryId = parseInt(categoryId as string);
+      }
+      
+      if (productTypeId && productTypeId !== 'all') {
+        filters.productTypeId = parseInt(productTypeId as string);
+      }
+      
+      if (tags) {
+        filters.tags = (tags as string).split(',');
+      }
+      
+      if (minPrice) {
+        filters.minPrice = parseFloat(minPrice as string);
+      }
+      
+      if (maxPrice) {
+        filters.maxPrice = parseFloat(maxPrice as string);
+      }
+
+      // Get all products with relationships (aggregates)
+      const allProducts = await storage.getAllProductsWithDetails();
+      
+      // Apply filters
+      let filteredProducts = allProducts.filter((product: any) => {
+        // Category filter
+        if (filters.categoryId && product.artwork.categoryId !== filters.categoryId) {
+          return false;
+        }
+        
+        // Product type filter
+        if (filters.productTypeId && product.productTypeId !== filters.productTypeId) {
+          return false;
+        }
+        
+        // Price range filter
+        const price = parseFloat(product.price);
+        if (filters.minPrice && price < filters.minPrice) return false;
+        if (filters.maxPrice && price > filters.maxPrice) return false;
+        
+        // Tags filter
+        if (filters.tags && product.artwork.tags) {
+          const hasMatchingTag = filters.tags.some((tag: string) => 
+            product.artwork.tags.includes(tag)
+          );
+          if (!hasMatchingTag) return false;
+        }
+        
+        // Search query filter
+        if (q) {
+          const query = (q as string).toLowerCase();
+          const searchableText = [
+            product.artwork.title,
+            product.artwork.artist.displayName,
+            product.productType.name,
+            ...(product.artwork.tags || [])
+          ].join(' ').toLowerCase();
+          
+          if (!searchableText.includes(query)) return false;
+        }
+        
+        return product.isActive;
+      });
+      
+      // Apply sorting
+      switch (sortBy) {
+        case 'price-low':
+          filteredProducts.sort((a: any, b: any) => parseFloat(a.price) - parseFloat(b.price));
+          break;
+        case 'price-high':
+          filteredProducts.sort((a: any, b: any) => parseFloat(b.price) - parseFloat(a.price));
+          break;
+        case 'newest':
+          filteredProducts.sort((a: any, b: any) => b.id - a.id);
+          break;
+        case 'featured':
+        default:
+          // Featured products based on artist verification and trending artwork
+          filteredProducts.sort((a: any, b: any) => {
+            const aScore = (a.artwork.artist.isVerified ? 2 : 0) + (a.artwork.isTrending ? 1 : 0);
+            const bScore = (b.artwork.artist.isVerified ? 2 : 0) + (b.artwork.isTrending ? 1 : 0);
+            return bScore - aScore;
+          });
+          break;
+      }
+      
+      // Apply pagination
+      const startIndex = parseInt(offset as string) || 0;
+      const limitNum = parseInt(limit as string) || 20;
+      const paginatedProducts = filteredProducts.slice(startIndex, startIndex + limitNum);
+      
+      res.json(paginatedProducts);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
   app.post("/api/products", async (req, res) => {
     try {
       const data = insertProductSchema.parse(req.body);
