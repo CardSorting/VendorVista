@@ -246,18 +246,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="py-12 sm:py-16 bg-gray-900 text-white">
+      {/* Call to Action for Artists */}
+      <section className="py-12 sm:py-16 bg-gradient-to-r from-pink-600 to-orange-500 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-            Start selling your designs today
+            Turn your art into stickers
           </h2>
-          <p className="text-lg text-gray-300 mb-8">
-            Join thousands of artists earning money from their creativity
+          <p className="text-lg opacity-90 mb-8">
+            Upload your designs and start earning money from every sticker sold. No upfront costs.
           </p>
           <Link href="/auth">
-            <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-3 font-semibold">
-              Get Started
+            <Button size="lg" className="bg-white text-pink-600 hover:bg-gray-100 px-8 py-3 font-semibold">
+              Start Selling Stickers
             </Button>
           </Link>
         </div>
