@@ -1,0 +1,28 @@
+
+product-browse.tsx:309 Uncaught TypeError: Cannot read properties of null (reading 'name')
+    at ProductCard (product-browse.tsx:309:38)
+
+12
+chunk-RPCDYKBN.js?v=856f7f25:14032 The above error occurred in the <ProductCard> component:
+
+    at ProductCard (https://727eb18f-13a4-4a6f-a10b-63fc2b0d5480-00-2k9mllg0y4g58.kirk.replit.dev/src/pages/product-browse.tsx:430:24)
+    at div
+    at div
+    at div
+    at ProductBrowse (https://727eb18f-13a4-4a6f-a10b-63fc2b0d5480-00-2k9mllg0y4g58.kirk.replit.dev/src/pages/product-browse.tsx:30:22)
+    at Route (https://727eb18f-13a4-4a6f-a10b-63fc2b0d5480-00-2k9mllg0y4g58.kirk.replit.d…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=856f7f25:323:16)
+    at Switch (https://727eb18f-13a4-4a6f-a10b-63fc2b0d5480-00-2k9mllg0y4g58.kirk.replit.d…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=856f7f25:379:17)
+    at div
+    at PageTransition (https://727eb18f-13a4-4a6f-a10b-63fc2b0d5480-00-2k9mllg0y4g58.kirk.replit.dev/src/components/page-transition.tsx:20:34)
+    at main
+    at div
+    at Router (https://727eb18f-13a4-4a6f-a10b-63fc2b0d5480-00-2k9mllg0y4g58.kirk.replit.dev/src/App.tsx?v=yBwS3ME4SHNUsF742sSu:42:25)
+    at Provider (https://727eb18f-13a4-4a6f-a10b-63fc2b0d5480-00-2k9mllg0y4g58.kirk.replit.d…unner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=856f7f25:38:15)
+    at TooltipProvider (https://727eb18f-13a4-4a6f-a10b-63fc2b0d5480-00-2k9mllg0y4g58.kirk.replit.d…rkspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=856f7f25:61:5)
+    at QueryClientProvider (https://727eb18f-13a4-4a6f-a10b-63fc2b0d5480-00-2k9mllg0y4g58.kirk.replit.d…rkspace/node_modules/.vite/deps/@tanstack_react-query.js?v=856f7f25:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+chunk-RPCDYKBN.js?v=856f7f25:9129 Uncaught TypeError: Cannot read properties of null (reading 'name')
+    at ProductCard (product-browse.tsx:309:38)
