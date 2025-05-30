@@ -91,19 +91,34 @@
 }
 
 @layer components {
-  /* Apple-style components following their design philosophy */
+  /* Advanced Apple-style components with sophisticated interactions */
   .apple-button {
     @apply px-6 py-3 rounded-xl font-medium transition-all duration-200 ease-out;
     @apply bg-primary text-primary-foreground hover:bg-primary/90;
-    @apply shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0;
+    @apply shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 active:scale-95;
     @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+    @apply relative overflow-hidden;
+    /* Apple's subtle haptic feedback simulation */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .apple-button::before {
+    content: '';
+    @apply absolute inset-0 bg-white/20 transform translate-x-[-100%];
+    @apply transition-transform duration-300 ease-out;
+  }
+
+  .apple-button:hover::before {
+    @apply transform translate-x-[100%];
   }
 
   .apple-button-secondary {
     @apply px-6 py-3 rounded-xl font-medium transition-all duration-200 ease-out;
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
-    @apply border border-border hover:border-primary/30;
+    @apply bg-secondary/80 backdrop-blur-sm text-secondary-foreground hover:bg-secondary;
+    @apply border border-border hover:border-primary/30 hover:shadow-lg;
     @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+    @apply transform hover:-translate-y-0.5 active:translate-y-0 active:scale-95;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .apple-input {
@@ -111,6 +126,10 @@
     @apply focus:border-primary focus:ring-0 transition-all duration-200;
     @apply bg-background/50 backdrop-blur-sm;
     @apply placeholder:text-muted-foreground;
+    @apply hover:bg-background/70 focus:bg-background/90;
+    @apply transform focus:scale-105 transition-transform duration-200;
+    /* Enhanced mobile touch experience */
+    -webkit-tap-highlight-color: transparent;
   }
 
   .apple-card {
@@ -118,6 +137,61 @@
     @apply rounded-2xl shadow-xl;
     @apply transition-all duration-300 ease-out;
     @apply hover:shadow-2xl hover:-translate-y-1;
+    @apply active:scale-95 active:shadow-lg;
+    /* Apple's spring physics */
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .apple-card-interactive {
+    @apply apple-card cursor-pointer;
+    @apply hover:bg-card/90 active:bg-card/70;
+    /* Subtle glow effect on interaction */
+    @apply hover:ring-2 hover:ring-primary/10;
+  }
+
+  /* Advanced mobile-optimized components */
+  .mobile-swipe-card {
+    @apply apple-card;
+    @apply transform transition-transform duration-200 ease-out;
+    /* Swipe gesture preparation */
+    touch-action: pan-y;
+  }
+
+  .mobile-floating-action {
+    @apply fixed bottom-6 right-6 z-50;
+    @apply w-14 h-14 rounded-full bg-primary text-primary-foreground;
+    @apply shadow-2xl hover:shadow-3xl;
+    @apply transform hover:scale-110 active:scale-95;
+    @apply transition-all duration-200 ease-out;
+    @apply flex items-center justify-center;
+    /* Enhanced mobile accessibility */
+    @apply focus:outline-none focus:ring-4 focus:ring-primary/30;
+  }
+
+  /* Apple-style loading states */
+  .loading-skeleton {
+    @apply bg-gradient-to-r from-muted via-muted/50 to-muted;
+    @apply bg-[length:200%_100%] animate-pulse;
+    background-image: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Apple-style progress indicators */
+  .progress-ring {
+    @apply w-6 h-6 transform -rotate-90;
+  }
+
+  .progress-ring circle {
+    @apply transition-all duration-300 ease-out;
+    stroke-dasharray: 126;
+    stroke-dashoffset: 126;
+  }
+
+  /* Enhanced touch feedback */
+  .touch-feedback {
+    @apply transition-all duration-150 ease-out;
+    @apply active:scale-95 active:brightness-90;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   }
 
   /* Artist-specific design elements */
@@ -267,10 +341,16 @@
   }
 }
 
-/* Custom animations */
+/* Advanced Apple-style animations and interactions */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { 
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes slideUp {
@@ -284,12 +364,62 @@
   }
 }
 
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0,0,0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-slide-up {
-  animation: slideUp 0.3s ease-out;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-bounce {
+  animation: bounce 1s ease-in-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 468px 100%;
+  animation: shimmer 1.5s infinite;
 }
 
 /* Glassmorphism effect */
