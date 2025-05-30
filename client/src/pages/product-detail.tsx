@@ -22,25 +22,15 @@ export default function ProductDetail() {
   
   const [quantity, setQuantity] = useState(1);
 
-  const { data: product, isLoading: productLoading } = useQuery<Product>({
-    queryKey: ["/api/products", productId],
+  const { data: product, isLoading: productLoading } = useQuery({
+    queryKey: ["/api/product", productId],
     enabled: !!productId,
   });
 
-  const { data: artwork } = useQuery<Artwork>({
-    queryKey: ["/api/artwork", product?.artworkId],
-    enabled: !!product?.artworkId,
-  });
-
-  const { data: productType } = useQuery<ProductType>({
-    queryKey: ["/api/product-types", product?.productTypeId],
-    enabled: !!product?.productTypeId,
-  });
-
-  const { data: artist } = useQuery<Artist>({
-    queryKey: ["/api/artists", artwork?.artistId],
-    enabled: !!artwork?.artistId,
-  });
+  // Extract nested data from the product response
+  const artwork = product?.artwork;
+  const productType = product?.productType;
+  const artist = artwork?.artist;
 
   const addToCartMutation = useMutation({
     mutationFn: async () => {
@@ -99,7 +89,7 @@ export default function ProductDetail() {
     );
   }
 
-  const finalPrice = product ? parseFloat(product.price) : 0;
+  const finalPrice = product?.price ? parseFloat(product.price) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -118,7 +108,7 @@ export default function ProductDetail() {
               <span>/</span>
             </>
           )}
-          <span className="text-gray-900">{productType?.name}</span>
+          <span className="text-gray-900">{artwork?.title} - {productType?.name}</span>
         </div>
 
         {/* Back Button */}
