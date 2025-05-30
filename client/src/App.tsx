@@ -15,6 +15,8 @@ import ArtistProfile from "@/pages/artist-profile";
 import ArtistDashboard from "@/pages/artist-dashboard";
 import Cart from "@/pages/cart";
 import Checkout from "@/pages/checkout";
+import Orders from "@/pages/orders";
+import OrderDetail from "@/pages/order-detail";
 import Auth from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
@@ -41,6 +43,8 @@ function Router() {
           <Route path="/artist/dashboard" component={ArtistDashboard} />
           <Route path="/cart" component={Cart} />
           <Route path="/checkout" component={Checkout} />
+          <Route path="/orders" component={Orders} />
+          <Route path="/orders/:id" component={OrderDetail} />
           <Route path="/auth" component={Auth} />
           <Route component={NotFound} />
         </Switch>
