@@ -529,12 +529,12 @@ export class DatabaseStorage implements IStorage {
     
     // Transform the flat results into nested objects
     return results.map((row: any) => ({
-      id: row.products.id,
-      artworkId: row.products.artworkId,
-      productTypeId: row.products.productTypeId,
-      price: row.products.price,
-      isActive: row.products.isActive,
-      artwork: {
+      id: row.products?.id,
+      artworkId: row.products?.artworkId,
+      productTypeId: row.products?.productTypeId,
+      price: row.products?.price,
+      isActive: row.products?.isActive,
+      artwork: row.artwork ? {
         id: row.artwork.id,
         title: row.artwork.title,
         imageUrl: row.artwork.imageUrl,
@@ -542,23 +542,23 @@ export class DatabaseStorage implements IStorage {
         tags: row.artwork.tags,
         categoryId: row.artwork.categoryId,
         isTrending: row.artwork.isTrending,
-        artist: {
+        artist: row.artists ? {
           id: row.artists.id,
           displayName: row.artists.displayName,
           isVerified: row.artists.isVerified,
-        },
+        } : null,
         category: row.categories ? {
           id: row.categories.id,
           name: row.categories.name,
         } : null
-      },
-      productType: {
+      } : null,
+      productType: row.product_types ? {
         id: row.product_types.id,
         name: row.product_types.name,
         description: row.product_types.description,
         basePrice: row.product_types.basePrice,
-      }
-    }));
+      } : null
+    })).filter(product => product.id && product.artwork);
   }
 }
 

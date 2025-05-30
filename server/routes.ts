@@ -224,7 +224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enhanced Product API Routes - Following Clean Architecture & CQRS
+  // Product-Focused API Routes - Clean Architecture Implementation
   app.get("/api/products", async (req, res) => {
     try {
       const { 
@@ -239,74 +239,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
         q 
       } = req.query;
 
-      // Query Handler - CQRS Read Side
-      const filters: any = {};
-      
-      if (categoryId && categoryId !== 'all') {
-        filters.categoryId = parseInt(categoryId as string);
-      }
-      
-      if (productTypeId && productTypeId !== 'all') {
-        filters.productTypeId = parseInt(productTypeId as string);
-      }
-      
-      if (tags) {
-        filters.tags = (tags as string).split(',');
-      }
-      
-      if (minPrice) {
-        filters.minPrice = parseFloat(minPrice as string);
-      }
-      
-      if (maxPrice) {
-        filters.maxPrice = parseFloat(maxPrice as string);
-      }
+      console.log('Product API request with filters:', {
+        categoryId, productTypeId, tags, minPrice, maxPrice, sortBy, q
+      });
 
-      // Get all products with relationships (aggregates)
+      // Get all products with relationships
       const allProducts = await storage.getAllProductsWithDetails();
+      console.log(`Found ${allProducts.length} total products`);
       
-      // Apply filters
+      // Apply domain-driven filtering
       let filteredProducts = allProducts.filter((product: any) => {
         // Category filter
-        if (filters.categoryId && product.artwork.categoryId !== filters.categoryId) {
-          return false;
+        if (categoryId && categoryId !== 'all') {
+          const catId = parseInt(categoryId as string);
+          if (product.artwork?.categoryId !== catId) return false;
         }
         
         // Product type filter
-        if (filters.productTypeId && product.productTypeId !== filters.productTypeId) {
-          return false;
+        if (productTypeId && productTypeId !== 'all') {
+          const typeId = parseInt(productTypeId as string);
+          if (product.productTypeId !== typeId) return false;
         }
         
         // Price range filter
-        const price = parseFloat(product.price);
-        if (filters.minPrice && price < filters.minPrice) return false;
-        if (filters.maxPrice && price > filters.maxPrice) return false;
+        if (minPrice || maxPrice) {
+          const price = parseFloat(product.price);
+          if (minPrice && price < parseFloat(minPrice as string)) return false;
+          if (maxPrice && price > parseFloat(maxPrice as string)) return false;
+        }
         
         // Tags filter
-        if (filters.tags && product.artwork.tags) {
-          const hasMatchingTag = filters.tags.some((tag: string) => 
-            product.artwork.tags.includes(tag)
-          );
-          if (!hasMatchingTag) return false;
+        if (tags) {
+          const tagList = (tags as string).split(',');
+          if (product.artwork?.tags) {
+            const hasMatchingTag = tagList.some((tag: string) => 
+              product.artwork.tags.includes(tag.trim())
+            );
+            if (!hasMatchingTag) return false;
+          } else {
+            return false;
+          }
         }
         
         // Search query filter
         if (q) {
           const query = (q as string).toLowerCase();
           const searchableText = [
-            product.artwork.title,
-            product.artwork.artist.displayName,
-            product.productType.name,
-            ...(product.artwork.tags || [])
+            product.artwork?.title || '',
+            product.artwork?.artist?.displayName || '',
+            product.productType?.name || '',
+            ...(product.artwork?.tags || [])
           ].join(' ').toLowerCase();
           
           if (!searchableText.includes(query)) return false;
         }
         
-        return product.isActive;
+        return product.isActive && product.artwork;
       });
       
-      // Apply sorting
+      console.log(`After filtering: ${filteredProducts.length} products`);
+      
+      // Apply business logic sorting
       switch (sortBy) {
         case 'price-low':
           filteredProducts.sort((a: any, b: any) => parseFloat(a.price) - parseFloat(b.price));
@@ -319,10 +312,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           break;
         case 'featured':
         default:
-          // Featured products based on artist verification and trending artwork
           filteredProducts.sort((a: any, b: any) => {
-            const aScore = (a.artwork.artist.isVerified ? 2 : 0) + (a.artwork.isTrending ? 1 : 0);
-            const bScore = (b.artwork.artist.isVerified ? 2 : 0) + (b.artwork.isTrending ? 1 : 0);
+            const aScore = (a.artwork?.artist?.isVerified ? 2 : 0) + (a.artwork?.isTrending ? 1 : 0);
+            const bScore = (b.artwork?.artist?.isVerified ? 2 : 0) + (b.artwork?.isTrending ? 1 : 0);
             return bScore - aScore;
           });
           break;
