@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Navigation } from "@/components/navigation";
+import { Footer } from "@/components/footer";
 import { useAuth } from "@/hooks/use-auth";
 
 // Pages
@@ -29,19 +30,22 @@ function Router() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navigation />
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/browse" component={Browse} />
-        <Route path="/artwork/:id" component={ArtworkDetail} />
-        <Route path="/artist/:id" component={ArtistProfile} />
-        <Route path="/artist/dashboard" component={ArtistDashboard} />
-        <Route path="/cart" component={Cart} />
-        <Route path="/checkout" component={Checkout} />
-        <Route path="/auth" component={Auth} />
-        <Route component={NotFound} />
-      </Switch>
+      <main className="flex-1">
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/browse" component={Browse} />
+          <Route path="/artwork/:id" component={ArtworkDetail} />
+          <Route path="/artist/:id" component={ArtistProfile} />
+          <Route path="/artist/dashboard" component={ArtistDashboard} />
+          <Route path="/cart" component={Cart} />
+          <Route path="/checkout" component={Checkout} />
+          <Route path="/auth" component={Auth} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+      <Footer />
     </div>
   );
 }
