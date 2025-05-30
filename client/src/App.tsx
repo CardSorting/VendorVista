@@ -20,6 +20,7 @@ import Checkout from "@/pages/checkout";
 import Orders from "@/pages/orders";
 import OrderDetail from "@/pages/order-detail";
 import Profile from "@/pages/profile";
+import ProductDetail from "@/pages/product-detail";
 import Auth from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
@@ -46,6 +47,7 @@ function Router() {
             <Route path="/orders" component={Orders} />
             <Route path="/orders/:id" component={OrderDetail} />
             <Route path="/profile" component={Profile} />
+            <Route path="/product/:productId" component={ProductDetail} />
             <Route path="/auth" component={Auth} />
             <Route component={NotFound} />
           </Switch>

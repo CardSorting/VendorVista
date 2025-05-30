@@ -202,6 +202,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Product routes
+  app.get("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const product = await storage.getProduct(id);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      res.json(product);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch product" });
+    }
+  });
+
   app.get("/api/product-types", async (req, res) => {
     try {
       const productTypes = await storage.getProductTypes();
