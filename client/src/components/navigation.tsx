@@ -149,16 +149,16 @@ export function Navigation() {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link href="/auth">
+                <a href="/auth/login">
                   <Button variant="outline" size="sm" className="bg-apple-blue text-white hover:bg-blue-600">
                     Sign In
                   </Button>
-                </Link>
-                <Link href="/auth">
+                </a>
+                <a href="/auth/login">
                   <Button size="sm" className="bg-artist-coral text-white hover:bg-red-500">
                     Start Selling
                   </Button>
-                </Link>
+                </a>
               </div>
             )}
           </div>
@@ -242,16 +242,16 @@ export function Navigation() {
                     </>
                   ) : (
                     <>
-                      <Link href="/auth">
+                      <a href="/auth/login">
                         <Button variant="outline" className="w-full">
                           Sign In
                         </Button>
-                      </Link>
-                      <Link href="/auth">
+                      </a>
+                      <a href="/auth/login">
                         <Button className="w-full bg-artist-coral text-white hover:bg-red-500">
                           Start Selling
                         </Button>
-                      </Link>
+                      </a>
                     </>
                   )}
                 </div>
