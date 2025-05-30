@@ -552,11 +552,11 @@ export class DatabaseStorage implements IStorage {
           name: row.categories.name,
         } : null
       } : null,
-      productType: row.product_types ? {
-        id: row.product_types.id,
-        name: row.product_types.name,
-        description: row.product_types.description,
-        basePrice: row.product_types.basePrice,
+      productType: row.productTypes ? {
+        id: row.productTypes.id,
+        name: row.productTypes.name,
+        description: row.productTypes.description,
+        basePrice: row.productTypes.basePrice,
       } : null
     })).filter(product => product.id && product.artwork);
   }
