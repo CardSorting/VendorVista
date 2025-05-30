@@ -415,6 +415,318 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced Cart API Routes
+  app.post("/api/cart/add", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const auth0User = req.oidc.user;
+      const user = await storage.getUserByEmail(auth0User.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const { productId, quantity = 1 } = req.body;
+      
+      if (!productId || quantity < 1 || quantity > 10) {
+        return res.status(400).json({ error: "Invalid product or quantity" });
+      }
+
+      await storage.addCartItem({
+        userId: user.id,
+        productId: parseInt(productId),
+        quantity: parseInt(quantity)
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to add item to cart" });
+    }
+  });
+
+  app.patch("/api/cart/:itemId", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const itemId = parseInt(req.params.itemId);
+      const { quantity } = req.body;
+
+      if (quantity < 1 || quantity > 10) {
+        return res.status(400).json({ error: "Invalid quantity" });
+      }
+
+      const updatedItem = await storage.updateCartItem(itemId, quantity);
+      if (!updatedItem) {
+        return res.status(404).json({ error: "Cart item not found" });
+      }
+
+      res.json(updatedItem);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update cart item" });
+    }
+  });
+
+  app.delete("/api/cart/:itemId", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const itemId = parseInt(req.params.itemId);
+      const success = await storage.removeCartItem(itemId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Cart item not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to remove cart item" });
+    }
+  });
+
+  app.post("/api/cart/clear", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const auth0User = req.oidc.user;
+      const user = await storage.getUserByEmail(auth0User.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      await storage.clearCart(user.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to clear cart" });
+    }
+  });
+
+  // Order Management API Routes
+  app.post("/api/orders", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const auth0User = req.oidc.user;
+      const user = await storage.getUserByEmail(auth0User.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const { shippingAddress } = req.body;
+      
+      if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.addressLine1 || 
+          !shippingAddress.city || !shippingAddress.state || !shippingAddress.postalCode) {
+        return res.status(400).json({ error: "Complete shipping address is required" });
+      }
+
+      // Get user's cart items
+      const cartItems = await storage.getCartItems(user.id);
+      if (cartItems.length === 0) {
+        return res.status(400).json({ error: "Cart is empty" });
+      }
+
+      // Calculate total
+      let totalAmount = 0;
+      const orderItems = [];
+
+      for (const cartItem of cartItems) {
+        const product = await storage.getProduct(cartItem.productId);
+        if (!product) {
+          return res.status(400).json({ error: `Product ${cartItem.productId} not found` });
+        }
+
+        const itemTotal = parseFloat(product.price) * (cartItem.quantity || 1);
+        totalAmount += itemTotal;
+
+        orderItems.push({
+          productId: cartItem.productId,
+          quantity: cartItem.quantity || 1,
+          price: product.price
+        });
+      }
+
+      // Add shipping and tax
+      const shipping = totalAmount > 50 ? 0 : 9.99;
+      const tax = totalAmount * 0.08;
+      totalAmount += shipping + tax;
+
+      // Create order
+      const order = await storage.createOrder({
+        userId: user.id,
+        totalAmount: totalAmount.toFixed(2),
+        status: "pending",
+        shippingAddress: `${shippingAddress.fullName}\n${shippingAddress.addressLine1}\n${shippingAddress.addressLine2 || ''}\n${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.postalCode}\n${shippingAddress.country}`
+      });
+
+      // Add order items
+      for (const item of orderItems) {
+        await storage.addOrderItem({
+          orderId: order.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price
+        });
+      }
+
+      // Clear cart
+      await storage.clearCart(user.id);
+
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create order" });
+    }
+  });
+
+  app.post("/api/orders/:id/payment", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const orderId = parseInt(req.params.id);
+      const order = await storage.getOrder(orderId);
+      
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      // Simulate payment processing
+      // In a real implementation, you would integrate with Stripe or another payment processor
+      const paymentIntentId = `pi_simulated_${Date.now()}`;
+      
+      res.json({
+        clientSecret: `${paymentIntentId}_secret`,
+        paymentIntentId
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to process payment" });
+    }
+  });
+
+  app.post("/api/orders/:id/confirm", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const orderId = parseInt(req.params.id);
+      const { paymentIntentId } = req.body;
+
+      if (!paymentIntentId) {
+        return res.status(400).json({ error: "Payment intent ID is required" });
+      }
+
+      const order = await storage.getOrder(orderId);
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      // Update order status to confirmed
+      await storage.updateOrderStatus(orderId, "confirmed");
+
+      // Update artist sales totals
+      const orderItems = await storage.getOrderItems(orderId);
+      for (const item of orderItems) {
+        const product = await storage.getProduct(item.productId);
+        if (product) {
+          const artwork = await storage.getArtwork(product.artworkId);
+          if (artwork) {
+            const artist = await storage.getArtist(artwork.artistId);
+            if (artist) {
+              const saleAmount = parseFloat(item.price) * item.quantity;
+              const currentSales = artist.totalSales || 0;
+              await storage.updateArtist(artist.id, {
+                totalSales: currentSales + saleAmount
+              });
+            }
+          }
+        }
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to confirm order" });
+    }
+  });
+
+  app.get("/api/orders", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const auth0User = req.oidc.user;
+      const user = await storage.getUserByEmail(auth0User.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const orders = await storage.getOrdersByUser(user.id);
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch orders" });
+    }
+  });
+
+  app.get("/api/orders/:id", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const orderId = parseInt(req.params.id);
+      const order = await storage.getOrder(orderId);
+      
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      // Get order items with product details
+      const orderItems = await storage.getOrderItems(orderId);
+      const itemsWithDetails = [];
+
+      for (const item of orderItems) {
+        const product = await storage.getProduct(item.productId);
+        if (product) {
+          const artwork = await storage.getArtwork(product.artworkId);
+          const productTypes = await storage.getProductTypes();
+          const productType = productTypes.find(pt => pt.id === product.productTypeId);
+          
+          if (artwork && productType) {
+            const artist = await storage.getArtist(artwork.artistId);
+            itemsWithDetails.push({
+              ...item,
+              product: {
+                ...product,
+                productType,
+                artwork: {
+                  ...artwork,
+                  artist
+                }
+              }
+            });
+          }
+        }
+      }
+
+      res.json({
+        ...order,
+        items: itemsWithDetails
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch order details" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
