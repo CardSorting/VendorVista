@@ -147,30 +147,31 @@ export function Navigation() {
               ))}
             </div>
 
-            {isAuthenticated && (
-              <>
+            {/* Wishlist & Cart Icons */}
+            <div className="flex items-center space-x-2">
+              {isAuthenticated && (
                 <Link
                   href="/wishlist"
-                  className="text-sm font-medium text-gray-700 hover:text-apple-blue transition-colors flex items-center"
+                  className="text-gray-600 hover:text-blue-600 transition-colors relative p-2 hover:bg-gray-100 rounded-full"
+                  title="Wishlist"
                 >
-                  <Heart className="h-4 w-4 mr-1" />
-                  Wishlist
+                  <Heart className="h-5 w-5" />
                 </Link>
-
-                <Link
-                  href="/cart"
-                  className="text-sm font-medium text-gray-700 hover:text-apple-blue transition-colors flex items-center relative"
-                >
-                  <ShoppingCart className="h-4 w-4 mr-1" />
-                  Cart
-                  {cartCount > 0 && (
-                    <Badge className="ml-1 bg-artist-coral text-white">
-                      {cartCount}
-                    </Badge>
-                  )}
-                </Link>
-              </>
-            )}
+              )}
+              
+              <Link
+                href="/cart"
+                className="text-gray-600 hover:text-blue-600 transition-colors relative p-2 hover:bg-gray-100 rounded-full"
+                title="Shopping Cart"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 min-w-[1.25rem] h-5 flex items-center justify-center p-0 text-xs bg-red-500 text-white rounded-full">
+                    {cartCount}
+                  </Badge>
+                )}
+              </Link>
+            </div>
 
             {isAuthenticated ? (
               <div className="flex items-center space-x-3">
@@ -223,17 +224,17 @@ export function Navigation() {
                 </DropdownMenu>
               </div>
             ) : (
-              <div className="flex items-center space-x-3">
-                <a href="/auth/login">
-                  <Button variant="outline" size="sm" className="bg-apple-blue text-white hover:bg-blue-600">
+              <div className="flex items-center space-x-2">
+                <Link href="/auth">
+                  <Button variant="outline" size="sm" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white">
                     Sign In
                   </Button>
-                </a>
-                <a href="/auth/login">
-                  <Button size="sm" className="bg-artist-coral text-white hover:bg-red-500">
+                </Link>
+                <Link href="/auth">
+                  <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
                     Start Selling
                   </Button>
-                </a>
+                </Link>
               </div>
             )}
           </div>
@@ -353,6 +354,55 @@ export function Navigation() {
           </div>
         </div>
       </nav>
+
+      {/* Secondary Navigation Bar - Product Categories */}
+      <div className="bg-gray-50 border-t hidden lg:block">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-3">
+            <div className="flex items-center space-x-8">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                    <Grid3X3 className="h-4 w-4 mr-2" />
+                    Shop by Category
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  {productCategories.map((category) => (
+                    <DropdownMenuItem key={category.name} asChild>
+                      <Link href={category.href} className="flex items-center">
+                        <category.icon className="h-4 w-4 mr-3" />
+                        {category.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {quickLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center"
+                >
+                  {link.label}
+                  {link.badge && (
+                    <Badge className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5">
+                      {link.badge}
+                    </Badge>
+                  )}
+                </Link>
+              ))}
+            </div>
+
+            <div className="flex items-center space-x-6 text-sm text-gray-600">
+              <Link href="/help" className="hover:text-blue-600 transition-colors">Customer Service</Link>
+              <Link href="/gift-cards" className="hover:text-blue-600 transition-colors">Gift Cards</Link>
+              <Link href="/bulk-orders" className="hover:text-blue-600 transition-colors">Bulk Orders</Link>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
   );
 }
