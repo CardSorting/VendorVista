@@ -157,7 +157,7 @@ export default function ProductBrowse() {
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {Array.isArray(categories) && categories.map((category: any) => (
                   <SelectItem key={category.id} value={category.id.toString()}>
                     {category.name}
@@ -172,7 +172,7 @@ export default function ProductBrowse() {
                 <SelectValue placeholder="All Products" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Products</SelectItem>
+                <SelectItem value="all">All Products</SelectItem>
                 {Array.isArray(productTypes) && productTypes.map((type: any) => (
                   <SelectItem key={type.id} value={type.id.toString()}>
                     {type.name}
