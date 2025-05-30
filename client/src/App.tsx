@@ -11,8 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 
 // Pages
 import Home from "@/pages/home";
-import Browse from "@/pages/browse";
-import ArtworkDetail from "@/pages/artwork-detail";
+import ProductBrowse from "@/pages/product-browse";
 import ArtistProfile from "@/pages/artist-profile";
 import ArtistDashboard from "@/pages/artist-dashboard";
 import Cart from "@/pages/cart";
@@ -38,8 +37,8 @@ function Router() {
         <PageTransition>
           <Switch>
             <Route path="/" component={Home} />
-            <Route path="/browse" component={Browse} />
-            <Route path="/artwork/:id" component={ArtworkDetail} />
+            <Route path="/browse" component={ProductBrowse} />
+            <Route path="/product/:productId" component={ProductDetail} />
             <Route path="/artist/:id" component={ArtistProfile} />
             <Route path="/artist/dashboard" component={ArtistDashboard} />
             <Route path="/cart" component={Cart} />
@@ -47,7 +46,6 @@ function Router() {
             <Route path="/orders" component={Orders} />
             <Route path="/orders/:id" component={OrderDetail} />
             <Route path="/profile" component={Profile} />
-            <Route path="/product/:productId" component={ProductDetail} />
             <Route path="/auth" component={Auth} />
             <Route component={NotFound} />
           </Switch>
