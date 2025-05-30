@@ -63,6 +63,30 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    /* Apple's typography preferences */
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Mobile-first text sizing */
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* Mobile-first responsive typography */
+  html {
+    font-size: 14px;
+  }
+
+  @media (min-width: 640px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      font-size: 18px;
+    }
   }
 }
 
@@ -151,20 +175,95 @@
     @apply sticky top-0 z-50;
   }
 
-  /* Apple-style typography hierarchy */
+  /* Apple-style typography hierarchy - Mobile First */
   .apple-title {
-    @apply text-4xl font-bold tracking-tight text-foreground;
+    @apply text-2xl font-bold tracking-tight text-foreground;
     font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+
+  @media (min-width: 640px) {
+    .apple-title {
+      @apply text-3xl;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .apple-title {
+      @apply text-4xl;
+    }
   }
 
   .apple-subtitle {
-    @apply text-xl font-medium text-muted-foreground;
+    @apply text-lg font-medium text-muted-foreground;
     font-feature-settings: 'kern' 1, 'liga' 1;
   }
 
+  @media (min-width: 640px) {
+    .apple-subtitle {
+      @apply text-xl;
+    }
+  }
+
   .apple-body {
-    @apply text-base leading-relaxed text-foreground;
+    @apply text-sm leading-relaxed text-foreground;
     font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+
+  @media (min-width: 640px) {
+    .apple-body {
+      @apply text-base;
+    }
+  }
+
+  /* Mobile-optimized components */
+  .mobile-touch-target {
+    @apply min-h-[44px] min-w-[44px]; /* Apple's minimum touch target */
+  }
+
+  .mobile-safe-area {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Apple-style mobile cards */
+  .mobile-card {
+    @apply apple-card p-4;
+  }
+
+  @media (min-width: 640px) {
+    .mobile-card {
+      @apply p-6;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .mobile-card {
+      @apply p-8;
+    }
+  }
+
+  /* Responsive grid system */
+  .responsive-grid {
+    @apply grid grid-cols-1 gap-4;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-grid {
+      @apply grid-cols-2 gap-6;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .responsive-grid {
+      @apply grid-cols-3 gap-8;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .responsive-grid {
+      @apply grid-cols-4;
+    }
   }
 }
 
