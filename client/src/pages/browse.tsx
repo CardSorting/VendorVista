@@ -40,14 +40,14 @@ export default function Browse() {
     queryKey: [
       "/api/artwork",
       {
-        categoryId: selectedCategory ? parseInt(selectedCategory) : undefined,
+        categoryId: selectedCategory && selectedCategory !== "all" ? parseInt(selectedCategory) : undefined,
         tags: selectedTags.length > 0 ? selectedTags : undefined,
         trending: showTrending,
         q: searchQuery,
       },
     ],
     queryFn: ({ queryKey }) => {
-      const [url, filters] = queryKey;
+      const [url, filters] = queryKey as [string, any];
       const params = new URLSearchParams();
       
       if (filters.categoryId) params.append('categoryId', filters.categoryId.toString());
@@ -66,7 +66,7 @@ export default function Browse() {
 
   const clearFilters = () => {
     setSearchQuery("");
-    setSelectedCategory("");
+    setSelectedCategory("all");
     setSelectedTags([]);
     setShowTrending(false);
   };
@@ -110,7 +110,7 @@ export default function Browse() {
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((category: any) => (
                 <SelectItem key={category.id} value={category.id.toString()}>
                   {category.name}
