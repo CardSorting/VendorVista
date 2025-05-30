@@ -529,6 +529,8 @@ export class DatabaseStorage implements IStorage {
     
 
     
+
+    
     // Transform the flat results into nested objects
     return results.map((row: any) => ({
       id: row.products?.id,
