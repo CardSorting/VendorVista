@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, insertArtworkSchema, insertProductSchema, insertCartItemSchema } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import { registerProductRoutes } from "./routes-product";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth0 Authentication routes
@@ -850,6 +851,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch order details" });
     }
   });
+
+  // Register product routes
+  await registerProductRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;
