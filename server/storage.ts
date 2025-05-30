@@ -527,6 +527,12 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(productTypes, eq(products.productTypeId, productTypes.id))
       .where(eq(products.isActive, true));
     
+    // Debug: Log the first row to see the structure
+    if (results.length > 0) {
+      console.log('First row structure:', Object.keys(results[0]));
+      console.log('ProductTypes data:', results[0].productTypes);
+    }
+    
     // Transform the flat results into nested objects
     return results.map((row: any) => ({
       id: row.products?.id,
