@@ -1,10 +1,11 @@
 import { useParams, Link, useLocation } from "wouter";
-import { ArrowLeft, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw, Facebook, Twitter, Copy, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
@@ -22,6 +23,47 @@ export default function ProductDetail() {
   
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
+
+  // Social sharing functions
+  const getProductUrl = () => {
+    return `${window.location.origin}/product/${productId}`;
+  };
+
+  const shareToFacebook = () => {
+    const url = encodeURIComponent(getProductUrl());
+    const title = encodeURIComponent(`Check out this amazing ${productType?.name}: ${artwork?.title}`);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${title}`, '_blank');
+  };
+
+  const shareToTwitter = () => {
+    const url = encodeURIComponent(getProductUrl());
+    const text = encodeURIComponent(`Check out this amazing ${productType?.name}: "${artwork?.title}" by ${artist?.displayName}`);
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+  };
+
+  const shareToWhatsApp = () => {
+    const url = encodeURIComponent(getProductUrl());
+    const text = encodeURIComponent(`Check out this amazing ${productType?.name}: "${artwork?.title}" by ${artist?.displayName} - ${url}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(getProductUrl());
+      toast({
+        title: "Link copied!",
+        description: "Product link has been copied to your clipboard.",
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy link to clipboard.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
 
   const { data: product, isLoading: productLoading } = useQuery({
     queryKey: [`/api/product/${productId}`],
@@ -230,10 +272,32 @@ export default function ProductDetail() {
                 <Heart className="h-4 w-4 mr-2" />
                 Save for Later
               </Button>
-              <Button variant="outline" className="flex-1">
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex-1">
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={shareToFacebook}>
+                    <Facebook className="h-4 w-4 mr-2" />
+                    Share on Facebook
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={shareToTwitter}>
+                    <Twitter className="h-4 w-4 mr-2" />
+                    Share on Twitter
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={shareToWhatsApp}>
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Share on WhatsApp
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={copyToClipboard}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Link
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             <Separator />
