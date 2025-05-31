@@ -1,8 +1,8 @@
 import {
-  users, artists, categories, artwork, productTypes, products, cartItems, orders, orderItems, follows, likes,
+  users, artists, categories, artwork, productTypes, products, cartItems, orders, orderItems, follows, likes, reviews,
   type User, type InsertUser, type Artist, type InsertArtist, type Category, type Artwork, type InsertArtwork,
   type ProductType, type Product, type InsertProduct, type CartItem, type InsertCartItem,
-  type Order, type InsertOrder, type OrderItem, type Follow, type Like
+  type Order, type InsertOrder, type OrderItem, type Follow, type Like, type Review, type InsertReview
 } from "@shared/schema";
 
 export interface IStorage {
@@ -63,6 +63,16 @@ export interface IStorage {
   likeArtwork(userId: number, artworkId: number): Promise<Like>;
   unlikeArtwork(userId: number, artworkId: number): Promise<boolean>;
   isLiked(userId: number, artworkId: number): Promise<boolean>;
+
+  // Review operations
+  getReviews(productId: number): Promise<Review[]>;
+  getReview(id: number): Promise<Review | undefined>;
+  createReview(review: InsertReview): Promise<Review>;
+  updateReview(id: number, updates: Partial<Review>): Promise<Review | undefined>;
+  deleteReview(id: number): Promise<boolean>;
+  getUserReview(userId: number, productId: number): Promise<Review | undefined>;
+  getProductRating(productId: number): Promise<{ averageRating: number; totalReviews: number }>;
+  markReviewHelpful(reviewId: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -77,6 +87,7 @@ export class MemStorage implements IStorage {
   private orderItems: Map<number, OrderItem> = new Map();
   private follows: Map<number, Follow> = new Map();
   private likes: Map<number, Like> = new Map();
+  private reviews: Map<number, Review> = new Map();
 
   private currentUserId = 1;
   private currentArtistId = 1;
@@ -89,6 +100,7 @@ export class MemStorage implements IStorage {
   private currentOrderItemId = 1;
   private currentFollowId = 1;
   private currentLikeId = 1;
+  private currentReviewId = 1;
 
   constructor() {
     this.initializeData();

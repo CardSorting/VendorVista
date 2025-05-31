@@ -109,6 +109,20 @@ export const likes = pgTable("likes", {
   createdAt: timestamp("createdAt").defaultNow(),
 });
 
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  productId: integer("productId").notNull(),
+  orderId: integer("orderId").notNull(),
+  rating: integer("rating").notNull(), // 1-5 stars
+  title: varchar("title", { length: 200 }),
+  comment: text("comment"),
+  isVerified: boolean("isVerified").default(false), // verified purchase
+  isHelpful: integer("isHelpful").default(0), // helpful votes count
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -145,6 +159,13 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
   createdAt: true,
 });
 
+export const insertReviewSchema = createInsertSchema(reviews).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  isHelpful: true,
+});
+
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -177,5 +198,7 @@ export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type Follow = typeof follows.$inferSelect;
 export type Like = typeof likes.$inferSelect;
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = z.infer<typeof insertReviewSchema>;
 export type LoginData = z.infer<typeof loginSchema>;
 export type RegisterData = z.infer<typeof registerSchema>;
