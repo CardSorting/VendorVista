@@ -9,18 +9,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Product, ProductType, Artwork, Artist } from "@shared/schema";
 
 export default function ProductDetail() {
   const { productId } = useParams<{ productId: string }>();
   const [, setLocation] = useLocation();
   const { user, isAuthenticated } = useAuth();
-  const { addToCart } = useCart();
+  const { addToCart, cartCount, cartItems } = useCart();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
   const [quantity, setQuantity] = useState(1);
+  const [justAdded, setJustAdded] = useState(false);
 
   const { data: product, isLoading: productLoading } = useQuery({
     queryKey: [`/api/product/${productId}`],
@@ -37,16 +38,23 @@ export default function ProductDetail() {
       return addToCart({ productId: parseInt(productId!), quantity });
     },
     onSuccess: () => {
+      setJustAdded(true);
       toast({
-        title: "Added to cart",
-        description: "Product has been added to your cart successfully.",
+        title: "Added to cart!",
+        description: `${quantity} ${productType?.name || 'item'}(s) added to your cart successfully.`,
+        duration: 3000,
       });
+      // Reset quantity to 1 after successful add
+      setQuantity(1);
+      // Clear the "just added" state after 2 seconds
+      setTimeout(() => setJustAdded(false), 2000);
     },
     onError: (error) => {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
+        duration: 5000,
       });
     },
   });
@@ -186,11 +194,20 @@ export default function ProductDetail() {
               <Button
                 onClick={() => addToCartMutation.mutate()}
                 disabled={!product.isActive || addToCartMutation.isPending}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3"
+                className={`w-full py-3 text-white transition-all duration-300 ${
+                  justAdded 
+                    ? "bg-green-500 hover:bg-green-600" 
+                    : "bg-orange-500 hover:bg-orange-600"
+                }`}
                 size="lg"
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                {addToCartMutation.isPending ? "Adding..." : "Add to Cart"}
+                {addToCartMutation.isPending 
+                  ? "Adding..." 
+                  : justAdded 
+                    ? "Added to Cart!" 
+                    : "Add to Cart"
+                }
               </Button>
               
               {!product.isActive && (

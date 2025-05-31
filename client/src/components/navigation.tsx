@@ -78,10 +78,10 @@ export function Navigation() {
             </nav>
 
             {/* Cart */}
-            <Link href="/cart" className="relative p-2 text-gray-600 hover:text-blue-600">
+            <Link href="/cart" className="relative p-2 text-gray-600 hover:text-blue-600 transition-all duration-200">
               <ShoppingCart className="h-5 w-5" />
               {cartCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[1.25rem] h-5 flex items-center justify-center rounded-full">
+                <Badge className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white text-xs min-w-[1.25rem] h-5 flex items-center justify-center rounded-full animate-pulse">
                   {cartCount}
                 </Badge>
               )}
