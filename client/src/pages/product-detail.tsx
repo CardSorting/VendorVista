@@ -24,6 +24,7 @@ export default function ProductDetail() {
   
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
+  const [showShareButtons, setShowShareButtons] = useState(false);
 
   // Social sharing functions
   const getProductUrl = () => {
@@ -277,37 +278,63 @@ export default function ProductDetail() {
             </div>
 
             {/* Additional Actions */}
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1">
-                <Heart className="h-4 w-4 mr-2" />
-                Save for Later
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex-1">
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share
+            <div className="space-y-3">
+              <div className="flex gap-3">
+                <Button variant="outline" className="flex-1">
+                  <Heart className="h-4 w-4 mr-2" />
+                  Save for Later
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setShowShareButtons(!showShareButtons)}
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+              </div>
+
+              {/* Share Buttons - Revealed on click */}
+              {showShareButtons && (
+                <div className="grid grid-cols-2 gap-2 p-4 bg-gray-50 rounded-lg border">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={shareToFacebook}
+                    className="flex items-center justify-center gap-2 hover:bg-blue-50"
+                  >
+                    <FaFacebook className="h-4 w-4 text-blue-600" />
+                    Facebook
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={shareToFacebook}>
-                    <FaFacebook className="h-4 w-4 mr-2 text-blue-600" />
-                    Share on Facebook
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={shareToTwitter}>
-                    <FaTwitter className="h-4 w-4 mr-2 text-blue-400" />
-                    Share on Twitter
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={shareToWhatsApp}>
-                    <MessageCircle className="h-4 w-4 mr-2 text-green-600" />
-                    Share on WhatsApp
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={copyToClipboard}>
-                    <Copy className="h-4 w-4 mr-2" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={shareToTwitter}
+                    className="flex items-center justify-center gap-2 hover:bg-blue-50"
+                  >
+                    <FaTwitter className="h-4 w-4 text-blue-400" />
+                    Twitter
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={shareToWhatsApp}
+                    className="flex items-center justify-center gap-2 hover:bg-green-50"
+                  >
+                    <MessageCircle className="h-4 w-4 text-green-600" />
+                    WhatsApp
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyToClipboard}
+                    className="flex items-center justify-center gap-2 hover:bg-gray-100"
+                  >
+                    <Copy className="h-4 w-4" />
                     Copy Link
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </Button>
+                </div>
+              )}
             </div>
 
             <Separator />
