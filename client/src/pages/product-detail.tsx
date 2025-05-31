@@ -16,7 +16,7 @@ export default function ProductDetail() {
   const { productId } = useParams<{ productId: string }>();
   const [, setLocation] = useLocation();
   const { user, isAuthenticated } = useAuth();
-  const { addToCart, cartCount, cartItems } = useCart();
+  const { addToCart, cartCount, cartItems, isAddingToCart } = useCart();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -29,35 +29,44 @@ export default function ProductDetail() {
   });
 
   // Extract nested data from the product response
-  const artwork = product?.artwork;
-  const productType = product?.productType;
+  const artwork = (product as any)?.artwork;
+  const productType = (product as any)?.productType;
   const artist = artwork?.artist;
 
-  const addToCartMutation = useMutation({
-    mutationFn: async () => {
-      return addToCart({ productId: parseInt(productId!), quantity });
-    },
-    onSuccess: () => {
-      setJustAdded(true);
+  const handleAddToCart = () => {
+    if (!user) {
       toast({
-        title: "Added to cart!",
-        description: `${quantity} ${productType?.name || 'item'}(s) added to your cart successfully.`,
-        duration: 3000,
-      });
-      // Reset quantity to 1 after successful add
-      setQuantity(1);
-      // Clear the "just added" state after 2 seconds
-      setTimeout(() => setJustAdded(false), 2000);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
+        title: "Sign in required",
+        description: "Please sign in to add items to your cart.",
         variant: "destructive",
         duration: 5000,
       });
-    },
-  });
+      return;
+    }
+
+    addToCart({ productId: parseInt(productId!), quantity }, {
+      onSuccess: () => {
+        setJustAdded(true);
+        toast({
+          title: "Added to cart!",
+          description: `${quantity} ${productType?.name || 'item'}(s) added to your cart successfully.`,
+          duration: 3000,
+        });
+        // Reset quantity to 1 after successful add
+        setQuantity(1);
+        // Clear the "just added" state after 2 seconds
+        setTimeout(() => setJustAdded(false), 2000);
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to add item to cart",
+          variant: "destructive",
+          duration: 5000,
+        });
+      },
+    });
+  };
 
   if (productLoading) {
     return (
@@ -97,7 +106,7 @@ export default function ProductDetail() {
     );
   }
 
-  const finalPrice = product?.price ? parseFloat(product.price) : 0;
+  const finalPrice = (product as any)?.price ? parseFloat((product as any).price) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -192,8 +201,8 @@ export default function ProductDetail() {
             {/* Add to Cart Button */}
             <div className="space-y-3">
               <Button
-                onClick={() => addToCartMutation.mutate()}
-                disabled={!product.isActive || addToCartMutation.isPending}
+                onClick={handleAddToCart}
+                disabled={!(product as any)?.isActive || isAddingToCart}
                 className={`w-full py-3 text-white transition-all duration-300 ${
                   justAdded 
                     ? "bg-green-500 hover:bg-green-600" 
@@ -202,7 +211,7 @@ export default function ProductDetail() {
                 size="lg"
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                {addToCartMutation.isPending 
+                {isAddingToCart 
                   ? "Adding..." 
                   : justAdded 
                     ? "Added to Cart!" 
@@ -210,7 +219,7 @@ export default function ProductDetail() {
                 }
               </Button>
               
-              {!product.isActive && (
+              {!(product as any)?.isActive && (
                 <p className="text-sm text-red-600 text-center">
                   This product is currently unavailable
                 </p>
