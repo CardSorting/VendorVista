@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { Search, Filter, Grid, List, Star, Heart, ShoppingBag } from "lucide-react";
+import { useCart } from "@/hooks/use-cart";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -270,6 +273,41 @@ export default function ProductBrowse() {
 }
 
 function ProductCard({ product, viewMode }: { product: Product; viewMode: "grid" | "list" }) {
+  const { addToCart, isAddingToCart } = useCart();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to add items to your cart.",
+        variant: "destructive",
+        duration: 5000,
+      });
+      return;
+    }
+
+    try {
+      await addToCart({ productId: product.id, quantity: 1 });
+      toast({
+        title: "Added to cart!",
+        description: `${product.productType.name} added to your cart successfully.`,
+        duration: 3000,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add item to cart",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
+  };
+
   return (
     <Link href={`/product/${product.id}`}>
       <Card className={`group cursor-pointer hover:shadow-lg transition-all duration-300 ${viewMode === "list" ? "flex" : ""}`}>
@@ -331,9 +369,14 @@ function ProductCard({ product, viewMode }: { product: Product; viewMode: "grid"
         <CardFooter className={`p-4 pt-0 ${viewMode === "list" ? "flex-col justify-end" : ""}`}>
           <div className="flex items-center justify-between w-full">
             <span className="text-lg font-bold text-gray-900">${product.price}</span>
-            <Button size="sm" className="ml-2">
+            <Button 
+              size="sm" 
+              className="ml-2"
+              onClick={handleAddToCart}
+              disabled={isAddingToCart}
+            >
               <ShoppingBag className="h-4 w-4 mr-1" />
-              Add to Cart
+              {isAddingToCart ? "Adding..." : "Add to Cart"}
             </Button>
           </div>
         </CardFooter>
