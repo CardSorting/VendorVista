@@ -433,19 +433,91 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            {/* Product Description */}
-            {artwork?.description && (
-              <>
-                <Separator />
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">About this artwork</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {artwork.description}
-                  </p>
-                </div>
-              </>
-            )}
           </div>
+        </div>
+
+        {/* Product Details and Reviews Section */}
+        <div className="mt-12">
+          <Tabs defaultValue="details" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Product Details</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="details" className="mt-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-6">
+                    {/* Product Features */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Product Features</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                          <Truck className="h-5 w-5" />
+                          <span>Free shipping on orders over $50</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                          <Shield className="h-5 w-5" />
+                          <span>Satisfaction guarantee</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                          <RotateCcw className="h-5 w-5" />
+                          <span>30-day return policy</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Product Description */}
+                    {artwork?.description && (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-3">About this artwork</h3>
+                        <p className="text-gray-600 leading-relaxed">
+                          {artwork.description}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Product Type Details */}
+                    {productType && (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-3">Product Information</h3>
+                        <div className="space-y-2">
+                          <p><span className="font-medium">Type:</span> {productType.name}</p>
+                          {productType.description && (
+                            <p><span className="font-medium">Description:</span> {productType.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="reviews" className="mt-6">
+              <div className="space-y-6">
+                <ReviewList productId={Number(productId)} />
+                
+                {isAuthenticated ? (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Write a Review</h3>
+                    <ReviewForm productId={Number(productId)} />
+                  </div>
+                ) : (
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <p className="text-gray-600 mb-4">
+                        Sign in to write a review for this product.
+                      </p>
+                      <Button onClick={() => window.location.href = '/api/auth/login'}>
+                        Sign In to Review
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
