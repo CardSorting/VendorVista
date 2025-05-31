@@ -59,7 +59,7 @@ export function useCart() {
     cartCount,
     cartTotal,
     isLoading,
-    addToCart: addToCartMutation.mutate,
+    addToCart: addToCartMutation.mutateAsync,
     updateCart: updateCartMutation.mutate,
     removeFromCart: removeFromCartMutation.mutate,
     isAddingToCart: addToCartMutation.isPending,

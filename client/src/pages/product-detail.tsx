@@ -33,7 +33,7 @@ export default function ProductDetail() {
   const productType = (product as any)?.productType;
   const artist = artwork?.artist;
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!user) {
       toast({
         title: "Sign in required",
@@ -44,28 +44,26 @@ export default function ProductDetail() {
       return;
     }
 
-    addToCart({ productId: parseInt(productId!), quantity }, {
-      onSuccess: () => {
-        setJustAdded(true);
-        toast({
-          title: "Added to cart!",
-          description: `${quantity} ${productType?.name || 'item'}(s) added to your cart successfully.`,
-          duration: 3000,
-        });
-        // Reset quantity to 1 after successful add
-        setQuantity(1);
-        // Clear the "just added" state after 2 seconds
-        setTimeout(() => setJustAdded(false), 2000);
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to add item to cart",
-          variant: "destructive",
-          duration: 5000,
-        });
-      },
-    });
+    try {
+      await addToCart({ productId: parseInt(productId!), quantity });
+      setJustAdded(true);
+      toast({
+        title: "Added to cart!",
+        description: `${quantity} ${productType?.name || 'item'}(s) added to your cart successfully.`,
+        duration: 3000,
+      });
+      // Reset quantity to 1 after successful add
+      setQuantity(1);
+      // Clear the "just added" state after 2 seconds
+      setTimeout(() => setJustAdded(false), 2000);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add item to cart",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
   };
 
   if (productLoading) {
