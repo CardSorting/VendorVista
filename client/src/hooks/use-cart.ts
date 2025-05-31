@@ -9,7 +9,7 @@ export function useCart() {
   const queryClient = useQueryClient();
 
   const { data: cartItems = [], isLoading } = useQuery({
-    queryKey: ["/api/cart", user?.id],
+    queryKey: ["/api/cart"],
     enabled: !!user?.id,
   });
 
@@ -25,7 +25,7 @@ export function useCart() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cart", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
     },
   });
 
@@ -35,7 +35,7 @@ export function useCart() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cart", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
     },
   });
 
@@ -45,7 +45,7 @@ export function useCart() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cart", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
     },
   });
 
