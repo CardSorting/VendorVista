@@ -1,6 +1,6 @@
 import { useParams, Link, useLocation } from "wouter";
 import { ArrowLeft, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw, Copy, MessageCircle } from "lucide-react";
-import { FaFacebook, FaTwitter } from "react-icons/fa";
+import { FaFacebook, FaTwitter, FaLinkedin, FaReddit, FaPinterest, FaTelegram } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +55,44 @@ export default function ProductDetail() {
     const text = encodeURIComponent(`Check out this amazing ${productType?.name}: "${artwork?.title}" by ${artist?.displayName} - ${url}`);
     const shareUrl = `https://wa.me/?text=${text}`;
     console.log('WhatsApp share URL:', shareUrl);
+    window.open(shareUrl, '_blank');
+  };
+
+  const shareToLinkedIn = () => {
+    console.log('Sharing to LinkedIn');
+    const url = encodeURIComponent(getProductUrl());
+    const title = encodeURIComponent(`${artwork?.title} - ${productType?.name}`);
+    const summary = encodeURIComponent(`Amazing ${productType?.name} featuring "${artwork?.title}" by ${artist?.displayName}`);
+    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}&summary=${summary}`;
+    console.log('LinkedIn share URL:', shareUrl);
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+  };
+
+  const shareToReddit = () => {
+    console.log('Sharing to Reddit');
+    const url = encodeURIComponent(getProductUrl());
+    const title = encodeURIComponent(`Check out this amazing ${productType?.name}: "${artwork?.title}" by ${artist?.displayName}`);
+    const shareUrl = `https://reddit.com/submit?url=${url}&title=${title}`;
+    console.log('Reddit share URL:', shareUrl);
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+  };
+
+  const shareToPinterest = () => {
+    console.log('Sharing to Pinterest');
+    const url = encodeURIComponent(getProductUrl());
+    const description = encodeURIComponent(`${artwork?.title} - ${productType?.name} by ${artist?.displayName}`);
+    const media = encodeURIComponent(artwork?.imageUrl || '');
+    const shareUrl = `https://pinterest.com/pin/create/button/?url=${url}&media=${media}&description=${description}`;
+    console.log('Pinterest share URL:', shareUrl);
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+  };
+
+  const shareToTelegram = () => {
+    console.log('Sharing to Telegram');
+    const url = encodeURIComponent(getProductUrl());
+    const text = encodeURIComponent(`Check out this amazing ${productType?.name}: "${artwork?.title}" by ${artist?.displayName}`);
+    const shareUrl = `https://t.me/share/url?url=${url}&text=${text}`;
+    console.log('Telegram share URL:', shareUrl);
     window.open(shareUrl, '_blank');
   };
 
@@ -296,7 +334,7 @@ export default function ProductDetail() {
 
               {/* Share Buttons - Revealed on click */}
               {showShareButtons && (
-                <div className="grid grid-cols-2 gap-2 p-4 bg-gray-50 rounded-lg border">
+                <div className="grid grid-cols-3 gap-2 p-4 bg-gray-50 rounded-lg border">
                   <Button
                     variant="outline"
                     size="sm"
@@ -318,11 +356,47 @@ export default function ProductDetail() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={shareToLinkedIn}
+                    className="flex items-center justify-center gap-2 hover:bg-blue-50"
+                  >
+                    <FaLinkedin className="h-4 w-4 text-blue-700" />
+                    LinkedIn
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={shareToWhatsApp}
                     className="flex items-center justify-center gap-2 hover:bg-green-50"
                   >
                     <MessageCircle className="h-4 w-4 text-green-600" />
                     WhatsApp
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={shareToReddit}
+                    className="flex items-center justify-center gap-2 hover:bg-orange-50"
+                  >
+                    <FaReddit className="h-4 w-4 text-orange-600" />
+                    Reddit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={shareToPinterest}
+                    className="flex items-center justify-center gap-2 hover:bg-red-50"
+                  >
+                    <FaPinterest className="h-4 w-4 text-red-600" />
+                    Pinterest
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={shareToTelegram}
+                    className="flex items-center justify-center gap-2 hover:bg-blue-50"
+                  >
+                    <FaTelegram className="h-4 w-4 text-blue-500" />
+                    Telegram
                   </Button>
                   <Button
                     variant="outline"
