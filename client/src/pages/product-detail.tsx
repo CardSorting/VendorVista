@@ -114,11 +114,11 @@ export default function ProductDetail() {
         {/* Back Button */}
         <Button 
           variant="ghost" 
-          onClick={() => setLocation(`/artwork/${artwork?.id}`)}
+          onClick={() => setLocation('/browse')}
           className="mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Artwork
+          Back to Products
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -151,9 +151,9 @@ export default function ProductDetail() {
               </h1>
               {artist && (
                 <p className="text-lg text-gray-600">
-                  by <Link href={`/artist/${artist.id}`} className="text-blue-600 hover:underline">
+                  by <span className="text-blue-600 font-medium">
                     {artist.displayName}
-                  </Link>
+                  </span>
                 </p>
               )}
             </div>
