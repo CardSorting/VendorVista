@@ -139,68 +139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Artwork routes
-  app.post("/api/artwork", async (req, res) => {
-    try {
-      const data = insertArtworkSchema.parse(req.body);
-      const artwork = await storage.createArtwork(data);
-      res.json(artwork);
-    } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create artwork" });
-    }
-  });
 
-  app.get("/api/artwork", async (req, res) => {
-    try {
-      const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
-      const tags = req.query.tags ? (req.query.tags as string).split(',') : undefined;
-      const trending = req.query.trending === 'true';
-      const limit = parseInt(req.query.limit as string) || 20;
-      const offset = parseInt(req.query.offset as string) || 0;
-
-      const filters = { categoryId, tags, trending };
-      const artwork = await storage.getArtworkList(filters, limit, offset);
-      res.json(artwork);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch artwork" });
-    }
-  });
-
-  app.get("/api/artwork/trending", async (req, res) => {
-    try {
-      const artwork = await storage.getTrendingArtwork();
-      res.json(artwork);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch trending artwork" });
-    }
-  });
-
-  app.get("/api/artwork/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const artwork = await storage.getArtwork(id);
-      if (!artwork) {
-        return res.status(404).json({ message: "Artwork not found" });
-      }
-      
-      // Increment view count
-      await storage.incrementArtworkViews(id);
-      
-      res.json(artwork);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch artwork" });
-    }
-  });
-
-  app.get("/api/artwork/artist/:artistId", async (req, res) => {
-    try {
-      const artistId = parseInt(req.params.artistId);
-      const artwork = await storage.getArtworkByArtist(artistId);
-      res.json(artwork);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch artist artwork" });
-    }
-  });
 
   // Product routes
   app.get("/api/products/:id", async (req, res) => {

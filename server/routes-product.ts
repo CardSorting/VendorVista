@@ -198,32 +198,7 @@ export async function registerProductRoutes(app: Express): Promise<void> {
     }
   });
 
-  // Legacy Artwork Routes (for backward compatibility with existing pages)
-  app.get("/api/artwork/trending", async (req, res) => {
-    try {
-      const artwork = await storage.getTrendingArtwork();
-      res.json(artwork);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch trending artwork" });
-    }
-  });
-
-  app.get("/api/artwork/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const artwork = await storage.getArtwork(id);
-      if (!artwork) {
-        return res.status(404).json({ message: "Artwork not found" });
-      }
-      
-      // Increment view count
-      await storage.incrementArtworkViews(id);
-      
-      res.json(artwork);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch artwork" });
-    }
-  });
+  
 
   // Product Command Routes (CQRS Write Side)
   app.post("/api/products", async (req, res) => {

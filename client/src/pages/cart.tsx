@@ -123,7 +123,7 @@ export default function Cart() {
                 {cartItems.map((item: any) => (
                   <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
                     {/* Product Image */}
-                    <Link href={`/artwork/${item.product.artwork.id}`}>
+                    <Link href={`/product/${item.product.id}`}>
                       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
                         <img
                           src={item.product.artwork.imageUrl}
@@ -135,7 +135,7 @@ export default function Cart() {
 
                     {/* Product Details */}
                     <div className="flex-1 min-w-0">
-                      <Link href={`/artwork/${item.product.artwork.id}`}>
+                      <Link href={`/product/${item.product.id}`}>
                         <h3 className="font-semibold apple-gray hover:text-apple-blue transition-colors cursor-pointer">
                           {item.product.artwork.title}
                         </h3>
