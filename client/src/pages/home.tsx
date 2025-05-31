@@ -48,7 +48,7 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-            {productArray.slice(0, 10).map((product: any) => (
+            {productArray.slice(0, 5).map((product: any) => (
               <Link key={product.id} href={`/product/${product.id}`} className="group">
                 <Card className="hover:shadow-lg transition-shadow">
                   <div className="aspect-square overflow-hidden rounded-t-lg">
@@ -95,7 +95,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-            {productArray.slice(5, 15).map((product: any) => (
+            {productArray.slice(5, 10).map((product: any) => (
               <Link key={product.id} href={`/product/${product.id}`} className="group">
                 <Card className="hover:shadow-lg transition-shadow">
                   <div className="aspect-square overflow-hidden rounded-t-lg">
@@ -142,7 +142,7 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 sm:gap-6">
-            {productArray.slice(0, 12).map((product: any) => (
+            {productArray.slice(10, 16).map((product: any) => (
               <Link key={`popular-${product.id}`} href={`/product/${product.id}`} className="group">
                 <Card className="hover:shadow-lg transition-shadow">
                   <div className="aspect-square overflow-hidden rounded-t-lg">
@@ -189,7 +189,7 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {productArray.slice(8, 12).map((product: any) => (
+            {productArray.slice(16, 20).map((product: any) => (
               <Link key={`recent-${product.id}`} href={`/product/${product.id}`} className="group">
                 <Card className="hover:shadow-lg transition-shadow">
                   <div className="aspect-[4/3] overflow-hidden rounded-t-lg">
