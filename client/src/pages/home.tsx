@@ -10,9 +10,7 @@ export default function Home() {
     queryKey: ["/api/categories"],
   });
 
-  const { data: trendingArtwork = [] } = useQuery({
-    queryKey: ["/api/artwork/trending"],
-  });
+  // Using static product data for display since we removed artwork routes
 
   // Sticker-focused product data
   const stickerProducts = [
@@ -66,7 +64,7 @@ export default function Home() {
           
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
             {stickerProducts.slice(0, 10).map((product) => (
-              <Link key={product.id} href={`/artwork/${product.id}`} className="group">
+              <Link key={product.id} href={`/product/${product.id}`} className="group">
                 <Card className="hover:shadow-lg transition-shadow">
                   <div className="aspect-square overflow-hidden rounded-t-lg">
                     <img 
@@ -113,7 +111,7 @@ export default function Home() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
             {stickerProducts.slice(5, 15).map((product) => (
-              <Link key={product.id} href={`/artwork/${product.id}`} className="group">
+              <Link key={product.id} href={`/product/${product.id}`} className="group">
                 <Card className="hover:shadow-lg transition-shadow">
                   <div className="aspect-square overflow-hidden rounded-t-lg">
                     <img 
@@ -160,7 +158,7 @@ export default function Home() {
           
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 sm:gap-6">
             {stickerProducts.slice(0, 12).map((product) => (
-              <Link key={`popular-${product.id}`} href={`/artwork/${product.id}`} className="group">
+              <Link key={`popular-${product.id}`} href={`/product/${product.id}`} className="group">
                 <Card className="hover:shadow-lg transition-shadow">
                   <div className="aspect-square overflow-hidden rounded-t-lg">
                     <img 
@@ -207,7 +205,7 @@ export default function Home() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {stickerProducts.slice(8, 12).map((product) => (
-              <Link key={`recent-${product.id}`} href={`/artwork/${product.id}`} className="group">
+              <Link key={`recent-${product.id}`} href={`/product/${product.id}`} className="group">
                 <Card className="hover:shadow-lg transition-shadow">
                   <div className="aspect-[4/3] overflow-hidden rounded-t-lg">
                     <img 
