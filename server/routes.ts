@@ -357,6 +357,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cart routes
+  app.get("/api/cart", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const auth0User = req.oidc.user;
+      const user = await storage.getUserByEmail(auth0User.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const cartItems = await storage.getCartItems(user.id);
+      res.json(cartItems);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch cart items" });
+    }
+  });
+
   app.get("/api/cart/:userId", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
