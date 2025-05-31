@@ -1,5 +1,6 @@
 import { useParams, Link, useLocation } from "wouter";
-import { ArrowLeft, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw, Facebook, Twitter, Copy, MessageCircle } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw, Copy, MessageCircle } from "lucide-react";
+import { FaFacebook, FaTwitter } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,21 +31,30 @@ export default function ProductDetail() {
   };
 
   const shareToFacebook = () => {
+    console.log('Sharing to Facebook');
     const url = encodeURIComponent(getProductUrl());
     const title = encodeURIComponent(`Check out this amazing ${productType?.name}: ${artwork?.title}`);
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${title}`, '_blank');
+    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${title}`;
+    console.log('Facebook share URL:', shareUrl);
+    window.open(shareUrl, '_blank', 'width=600,height=400');
   };
 
   const shareToTwitter = () => {
+    console.log('Sharing to Twitter');
     const url = encodeURIComponent(getProductUrl());
     const text = encodeURIComponent(`Check out this amazing ${productType?.name}: "${artwork?.title}" by ${artist?.displayName}`);
-    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+    const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+    console.log('Twitter share URL:', shareUrl);
+    window.open(shareUrl, '_blank', 'width=600,height=400');
   };
 
   const shareToWhatsApp = () => {
+    console.log('Sharing to WhatsApp');
     const url = encodeURIComponent(getProductUrl());
     const text = encodeURIComponent(`Check out this amazing ${productType?.name}: "${artwork?.title}" by ${artist?.displayName} - ${url}`);
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+    const shareUrl = `https://wa.me/?text=${text}`;
+    console.log('WhatsApp share URL:', shareUrl);
+    window.open(shareUrl, '_blank');
   };
 
   const copyToClipboard = async () => {
@@ -281,15 +291,15 @@ export default function ProductDetail() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={shareToFacebook}>
-                    <Facebook className="h-4 w-4 mr-2" />
+                    <FaFacebook className="h-4 w-4 mr-2 text-blue-600" />
                     Share on Facebook
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={shareToTwitter}>
-                    <Twitter className="h-4 w-4 mr-2" />
+                    <FaTwitter className="h-4 w-4 mr-2 text-blue-400" />
                     Share on Twitter
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={shareToWhatsApp}>
-                    <MessageCircle className="h-4 w-4 mr-2" />
+                    <MessageCircle className="h-4 w-4 mr-2 text-green-600" />
                     Share on WhatsApp
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={copyToClipboard}>
