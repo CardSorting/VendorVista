@@ -1,4 +1,4 @@
-import { users, artists, categories, artwork, productTypes, products, cartItems, orders, orderItems, follows, likes, type User, type InsertUser, type Artist, type InsertArtist, type Category, type Artwork, type InsertArtwork, type ProductType, type Product, type InsertProduct, type CartItem, type InsertCartItem, type Order, type InsertOrder, type OrderItem, type Follow, type Like } from "@shared/schema.js";
+import { users, artists, categories, artwork, productTypes, products, cartItems, orders, orderItems, follows, likes, reviews, type User, type InsertUser, type Artist, type InsertArtist, type Category, type Artwork, type InsertArtwork, type ProductType, type Product, type InsertProduct, type CartItem, type InsertCartItem, type Order, type InsertOrder, type OrderItem, type Follow, type Like, type Review, type InsertReview } from "@shared/schema.js";
 import { db } from "./db.js";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
 
@@ -60,6 +60,16 @@ export interface IStorage {
   likeArtwork(userId: number, artworkId: number): Promise<Like>;
   unlikeArtwork(userId: number, artworkId: number): Promise<boolean>;
   isLiked(userId: number, artworkId: number): Promise<boolean>;
+
+  // Review operations
+  getReviews(productId: number): Promise<Review[]>;
+  getReview(id: number): Promise<Review | undefined>;
+  createReview(review: InsertReview): Promise<Review>;
+  updateReview(id: number, updates: Partial<Review>): Promise<Review | undefined>;
+  deleteReview(id: number): Promise<boolean>;
+  getUserReview(userId: number, productId: number): Promise<Review | undefined>;
+  getProductRating(productId: number): Promise<{ averageRating: number; totalReviews: number }>;
+  markReviewHelpful(reviewId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -542,6 +552,104 @@ export class DatabaseStorage implements IStorage {
         eq(likes.artworkId, artworkId)
       ));
     return !!like;
+  }
+
+  // Review operations
+  async getReviews(productId: number): Promise<Review[]> {
+    return await db
+      .select({
+        id: reviews.id,
+        userId: reviews.userId,
+        productId: reviews.productId,
+        orderId: reviews.orderId,
+        rating: reviews.rating,
+        title: reviews.title,
+        comment: reviews.comment,
+        isVerified: reviews.isVerified,
+        isHelpful: reviews.isHelpful,
+        createdAt: reviews.createdAt,
+        updatedAt: reviews.updatedAt,
+        user: {
+          id: users.id,
+          username: users.username,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          avatarUrl: users.avatarUrl
+        }
+      })
+      .from(reviews)
+      .leftJoin(users, eq(reviews.userId, users.id))
+      .where(eq(reviews.productId, productId))
+      .orderBy(desc(reviews.createdAt));
+  }
+
+  async getReview(id: number): Promise<Review | undefined> {
+    const [review] = await db.select().from(reviews).where(eq(reviews.id, id));
+    return review || undefined;
+  }
+
+  async createReview(insertReview: InsertReview): Promise<Review> {
+    const [review] = await db
+      .insert(reviews)
+      .values({
+        ...insertReview,
+        title: insertReview.title || null,
+        comment: insertReview.comment || null,
+        isVerified: insertReview.isVerified || false
+      })
+      .returning();
+    return review;
+  }
+
+  async updateReview(id: number, updates: Partial<Review>): Promise<Review | undefined> {
+    const [review] = await db
+      .update(reviews)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(reviews.id, id))
+      .returning();
+    return review || undefined;
+  }
+
+  async deleteReview(id: number): Promise<boolean> {
+    const result = await db.delete(reviews).where(eq(reviews.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async getUserReview(userId: number, productId: number): Promise<Review | undefined> {
+    const [review] = await db
+      .select()
+      .from(reviews)
+      .where(and(
+        eq(reviews.userId, userId),
+        eq(reviews.productId, productId)
+      ));
+    return review || undefined;
+  }
+
+  async getProductRating(productId: number): Promise<{ averageRating: number; totalReviews: number }> {
+    const result = await db
+      .select({
+        averageRating: sql<number>`COALESCE(AVG(${reviews.rating}), 0)`,
+        totalReviews: sql<number>`COUNT(${reviews.id})`
+      })
+      .from(reviews)
+      .where(eq(reviews.productId, productId));
+    
+    const { averageRating, totalReviews } = result[0] || { averageRating: 0, totalReviews: 0 };
+    return { 
+      averageRating: Math.round(averageRating * 10) / 10, 
+      totalReviews: Number(totalReviews) 
+    };
+  }
+
+  async markReviewHelpful(reviewId: number): Promise<void> {
+    await db
+      .update(reviews)
+      .set({ isHelpful: sql`${reviews.isHelpful} + 1` })
+      .where(eq(reviews.id, reviewId));
   }
 
   // Product-focused query methods following CQRS pattern

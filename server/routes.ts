@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, insertArtworkSchema, insertProductSchema, insertCartItemSchema } from "@shared/schema";
+import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, insertArtworkSchema, insertProductSchema, insertCartItemSchema, insertReviewSchema } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { registerProductRoutes } from "./routes-product";
@@ -807,6 +807,160 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch order details" });
+    }
+  });
+
+  // Review routes
+  app.get("/api/products/:productId/reviews", async (req, res) => {
+    try {
+      const productId = parseInt(req.params.productId);
+      const reviews = await storage.getReviews(productId);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error getting reviews:", error);
+      res.status(500).json({ error: "Failed to get reviews" });
+    }
+  });
+
+  app.get("/api/products/:productId/rating", async (req, res) => {
+    try {
+      const productId = parseInt(req.params.productId);
+      const rating = await storage.getProductRating(productId);
+      res.json(rating);
+    } catch (error) {
+      console.error("Error getting product rating:", error);
+      res.status(500).json({ error: "Failed to get product rating" });
+    }
+  });
+
+  app.post("/api/products/:productId/reviews", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const auth0User = req.oidc.user;
+      if (!auth0User?.email) {
+        return res.status(400).json({ error: "Invalid user data" });
+      }
+
+      const user = await storage.getUserByEmail(auth0User.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const productId = parseInt(req.params.productId);
+      const reviewData = insertReviewSchema.parse({
+        ...req.body,
+        userId: user.id,
+        productId
+      });
+
+      // Check if user already reviewed this product
+      const existingReview = await storage.getUserReview(user.id, productId);
+      if (existingReview) {
+        return res.status(400).json({ error: "You have already reviewed this product" });
+      }
+
+      const review = await storage.createReview(reviewData);
+      res.status(201).json(review);
+    } catch (error) {
+      console.error("Error creating review:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid review data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create review" });
+    }
+  });
+
+  app.put("/api/reviews/:reviewId", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const auth0User = req.oidc.user;
+      if (!auth0User?.email) {
+        return res.status(400).json({ error: "Invalid user data" });
+      }
+
+      const user = await storage.getUserByEmail(auth0User.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const reviewId = parseInt(req.params.reviewId);
+      const existingReview = await storage.getReview(reviewId);
+      
+      if (!existingReview) {
+        return res.status(404).json({ error: "Review not found" });
+      }
+
+      if (existingReview.userId !== user.id) {
+        return res.status(403).json({ error: "Not authorized to edit this review" });
+      }
+
+      const updates = {
+        rating: req.body.rating,
+        title: req.body.title,
+        comment: req.body.comment
+      };
+
+      const updatedReview = await storage.updateReview(reviewId, updates);
+      res.json(updatedReview);
+    } catch (error) {
+      console.error("Error updating review:", error);
+      res.status(500).json({ error: "Failed to update review" });
+    }
+  });
+
+  app.delete("/api/reviews/:reviewId", async (req, res) => {
+    try {
+      if (!req.oidc.isAuthenticated()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const auth0User = req.oidc.user;
+      if (!auth0User?.email) {
+        return res.status(400).json({ error: "Invalid user data" });
+      }
+
+      const user = await storage.getUserByEmail(auth0User.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const reviewId = parseInt(req.params.reviewId);
+      const existingReview = await storage.getReview(reviewId);
+      
+      if (!existingReview) {
+        return res.status(404).json({ error: "Review not found" });
+      }
+
+      if (existingReview.userId !== user.id) {
+        return res.status(403).json({ error: "Not authorized to delete this review" });
+      }
+
+      const deleted = await storage.deleteReview(reviewId);
+      if (deleted) {
+        res.json({ success: true });
+      } else {
+        res.status(500).json({ error: "Failed to delete review" });
+      }
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      res.status(500).json({ error: "Failed to delete review" });
+    }
+  });
+
+  app.post("/api/reviews/:reviewId/helpful", async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.reviewId);
+      await storage.markReviewHelpful(reviewId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking review helpful:", error);
+      res.status(500).json({ error: "Failed to mark review helpful" });
     }
   });
 
