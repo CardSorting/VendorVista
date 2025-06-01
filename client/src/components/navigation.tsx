@@ -112,6 +112,10 @@ export function Navigation() {
                     </>
                   )}
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin">Admin Panel</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout}>
                     Sign Out
                   </DropdownMenuItem>
