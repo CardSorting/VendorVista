@@ -1,10 +1,6 @@
 #!/usr/bin/env node
 
-import { Auth0RoleManager } from './server/auth0-setup.js';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
+import { Auth0RoleManager } from './server/auth0-setup.ts';
 
 async function setupRoles() {
   try {
