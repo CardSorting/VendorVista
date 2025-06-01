@@ -5,6 +5,7 @@ import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, inse
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { registerProductRoutes } from "./routes-product";
+import { requireAuth, requireSeller, requireAdmin, requireSellerOrAdmin } from "./middleware/simple-auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth0 Authentication routes
@@ -35,8 +36,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Extract roles from Auth0 (you'll need to configure these in Auth0)
+      const userRoles = auth0User['https://artistmarket.com/roles'] || ['buyer'];
+      const userPermissions = auth0User['https://artistmarket.com/permissions'] || [];
+
       res.json({ 
-        user: { ...user, password: undefined },
+        user: { 
+          ...user, 
+          password: undefined,
+          roles: userRoles,
+          permissions: userPermissions
+        },
         isAuthenticated: true 
       });
     } catch (error) {
@@ -68,14 +78,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Artist routes
-  app.post("/api/artists", async (req, res) => {
+  // Artist routes (seller/admin only)
+  app.post("/api/artists", requireSellerOrAdmin, async (req, res) => {
     try {
       const data = insertArtistSchema.parse(req.body);
       const artist = await storage.createArtist(data);
-      
-      // Update user to be an artist
-      await storage.updateUser(data.userId, { isArtist: true });
       
       res.json(artist);
     } catch (error) {
