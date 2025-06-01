@@ -147,6 +147,34 @@ export class Auth0RoleManager {
     }
   }
 
+  async assignRoleToUser(userId: string, roleName: string): Promise<void> {
+    const token = await this.getManagementToken();
+    
+    try {
+      // First, get the role ID by name
+      const role = await this.getRoleByName(roleName);
+      if (!role) {
+        throw new Error(`Role '${roleName}' not found`);
+      }
+
+      // Assign the role to the user
+      await axios.post(
+        `https://${this.config.domain}/api/v2/users/${userId}/roles`,
+        {
+          roles: [role.id]
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    } catch (error: any) {
+      throw new Error(`Failed to assign role to user: ${error.response?.data?.message || error.message}`);
+    }
+  }
+
   async setupDefaultRoles(): Promise<void> {
     console.log('Setting up Auth0 roles...');
 
