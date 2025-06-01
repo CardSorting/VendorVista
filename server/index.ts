@@ -34,7 +34,7 @@ const config = {
   authRequired: false,
   auth0Logout: true,
   secret: process.env.AUTH0_SECRET,
-  baseURL: process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 'http://localhost:5000',
+  baseURL: 'https://vendor-vista-0xjzy.replit.app',
   clientID: '1KVvM9Rfr8lWUgYyVRFBCxxaWZurH7se',
   issuerBaseURL: 'https://dev-57c4wim3kish0u23.us.auth0.com',
   routes: {
