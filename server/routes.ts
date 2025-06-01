@@ -64,8 +64,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Auth0 RBAC Setup endpoint (admin only)
-  app.post("/api/auth/setup-roles", requireAdmin, async (req, res) => {
+  // Test Auth0 Management API credentials
+  app.get("/api/auth/test-credentials", async (req, res) => {
+    const auth0ClientId = process.env.AUTH0_MANAGEMENT_CLIENT_ID;
+    const auth0ClientSecret = process.env.AUTH0_MANAGEMENT_CLIENT_SECRET;
+    
+    res.json({
+      hasClientId: !!auth0ClientId,
+      hasClientSecret: !!auth0ClientSecret,
+      clientIdPreview: auth0ClientId ? auth0ClientId.substring(0, 8) + '...' : 'missing'
+    });
+  });
+
+  // Auth0 RBAC Setup endpoint (initial setup - no auth required)
+  app.post("/api/auth/setup-roles", async (req, res) => {
     try {
       // Check for required Auth0 Management API credentials
       const auth0Domain = process.env.AUTH0_DOMAIN || 'dev-57c4wim3kish0u23.us.auth0.com';
