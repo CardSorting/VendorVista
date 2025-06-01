@@ -5,7 +5,9 @@ import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, inse
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { registerProductRoutes } from "./routes-product";
+import { registerRBACDemoRoutes } from "./routes-rbac-demo";
 import { requireAuth, requireSeller, requireAdmin, requireSellerOrAdmin } from "./middleware/simple-auth";
+import { Auth0RoleManager } from "./auth0-setup";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth0 Authentication routes
@@ -60,6 +62,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       isAuthenticated: req.oidc.isAuthenticated(),
       user: req.oidc.isAuthenticated() ? req.oidc.user : null
     });
+  });
+
+  // Auth0 RBAC Setup endpoint (admin only)
+  app.post("/api/auth/setup-roles", requireAdmin, async (req, res) => {
+    try {
+      // Check for required Auth0 Management API credentials
+      const auth0Domain = process.env.AUTH0_DOMAIN || 'dev-57c4wim3kish0u23.us.auth0.com';
+      const auth0ClientId = process.env.AUTH0_MANAGEMENT_CLIENT_ID;
+      const auth0ClientSecret = process.env.AUTH0_MANAGEMENT_CLIENT_SECRET;
+      const auth0Audience = process.env.AUTH0_AUDIENCE || `https://${auth0Domain}/api/v2/`;
+
+      if (!auth0ClientId || !auth0ClientSecret) {
+        return res.status(400).json({ 
+          error: "Auth0 Management API credentials required",
+          required: ["AUTH0_MANAGEMENT_CLIENT_ID", "AUTH0_MANAGEMENT_CLIENT_SECRET"],
+          message: "Please provide Auth0 Management API credentials to set up roles and permissions"
+        });
+      }
+
+      const roleManager = new Auth0RoleManager({
+        domain: auth0Domain,
+        clientId: auth0ClientId,
+        clientSecret: auth0ClientSecret,
+        audience: auth0Audience
+      });
+
+      await roleManager.setupDefaultRoles();
+      
+      res.json({ 
+        success: true, 
+        message: "Auth0 roles and permissions have been set up successfully",
+        roles: ["buyer", "seller", "admin"],
+        domain: auth0Domain
+      });
+    } catch (error: any) {
+      console.error("Auth0 setup error:", error);
+      res.status(500).json({ 
+        error: "Failed to set up Auth0 roles and permissions",
+        details: error.message
+      });
+    }
   });
 
   // User routes
@@ -973,6 +1016,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register product routes
   await registerProductRoutes(app);
+
+  // Register RBAC demo routes
+  registerRBACDemoRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;
