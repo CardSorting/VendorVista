@@ -1,25 +1,61 @@
 import { Express } from "express";
 import { requireAuth, requireSeller, requireAdmin, requireSellerOrAdmin } from "./middleware/simple-auth";
+import { Auth0RoleManager } from "./auth0-setup";
 
 export function registerRBACDemoRoutes(app: Express) {
   // Demo route to show different access levels
-  app.get("/api/rbac/demo", requireAuth, (req, res) => {
-    const auth0User = req.oidc.user;
-    const userRoles = auth0User?.['https://artistmarket.com/roles'] || ['buyer'];
-    
-    res.json({
-      message: "RBAC Demo - Your current access level",
-      user: {
-        email: auth0User?.email,
-        roles: userRoles
-      },
-      permissions: {
-        canViewProducts: true, // All authenticated users
-        canCreateArtwork: userRoles.includes('seller') || userRoles.includes('admin'),
-        canManageUsers: userRoles.includes('admin'),
-        canAccessAdminPanel: userRoles.includes('admin')
+  app.get("/api/rbac/demo", requireAuth, async (req, res) => {
+    try {
+      const auth0User = req.oidc.user;
+      
+      // Initialize Auth0 Role Manager to fetch actual user roles
+      const auth0Domain = process.env.AUTH0_DOMAIN || 'dev-57c4wim3kish0u23.us.auth0.com';
+      const auth0ClientId = process.env.AUTH0_MANAGEMENT_CLIENT_ID;
+      const auth0ClientSecret = process.env.AUTH0_MANAGEMENT_CLIENT_SECRET;
+      const auth0Audience = process.env.AUTH0_AUDIENCE || `https://${auth0Domain}/api/v2/`;
+
+      let userRoles = ['buyer']; // Default role
+      let roleDetails = [];
+
+      if (auth0ClientId && auth0ClientSecret && auth0User?.sub) {
+        try {
+          const roleManager = new Auth0RoleManager({
+            domain: auth0Domain,
+            clientId: auth0ClientId,
+            clientSecret: auth0ClientSecret,
+            audience: auth0Audience
+          });
+
+          // Fetch user roles from Auth0 Management API
+          const userRolesResponse = await roleManager.getUserRoles(auth0User.sub);
+          if (userRolesResponse && userRolesResponse.length > 0) {
+            userRoles = userRolesResponse.map((role: any) => role.name);
+            roleDetails = userRolesResponse;
+          }
+        } catch (error) {
+          console.warn('Failed to fetch user roles from Auth0:', error);
+        }
       }
-    });
+      
+      res.json({
+        message: "RBAC Demo - Your current access level",
+        userId: auth0User?.sub,
+        user: {
+          email: auth0User?.email,
+          roles: userRoles
+        },
+        roleDetails: roleDetails,
+        permissions: {
+          canViewProducts: true,
+          canCreateArtwork: userRoles.includes('seller') || userRoles.includes('admin'),
+          canManageUsers: userRoles.includes('admin'),
+          canAccessAdminPanel: userRoles.includes('admin')
+        }
+      });
+    } catch (error) {
+      console.error('Error in RBAC demo endpoint:', error);
+      res.status(500).json({ error: 'Failed to retrieve user permissions' });
+    }
   });
 
   // Buyer-accessible endpoint (all authenticated users)
