@@ -1,4 +1,4 @@
-import { users, artists, categories, artwork, productTypes, products, cartItems, orders, orderItems, follows, likes, reviews, type User, type InsertUser, type Artist, type InsertArtist, type Category, type Artwork, type InsertArtwork, type ProductType, type Product, type InsertProduct, type CartItem, type InsertCartItem, type Order, type InsertOrder, type OrderItem, type Follow, type Like, type Review, type InsertReview } from "@shared/schema.js";
+import { users, artists, categories, artwork, productTypes, products, cartItems, orders, orderItems, follows, likes, reviews, roles, permissions, rolePermissions, userRoles, type User, type InsertUser, type Artist, type InsertArtist, type Category, type Artwork, type InsertArtwork, type ProductType, type Product, type InsertProduct, type CartItem, type InsertCartItem, type Order, type InsertOrder, type OrderItem, type Follow, type Like, type Review, type InsertReview, type Role, type InsertRole, type Permission, type InsertPermission, type RoleType } from "@shared/schema.js";
 import { db } from "./db.js";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
 
@@ -9,6 +9,17 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
+
+  // RBAC operations
+  getUserRoles(userId: number): Promise<RoleType[]>;
+  assignUserRole(userId: number, roleName: string): Promise<void>;
+  removeUserRole(userId: number, roleName: string): Promise<void>;
+  hasRole(userId: number, roleName: string): Promise<boolean>;
+  createRole(role: InsertRole): Promise<Role>;
+  getRoles(): Promise<Role[]>;
+  createPermission(permission: InsertPermission): Promise<Permission>;
+  getPermissions(): Promise<Permission[]>;
+  getRolePermissions(roleId: number): Promise<Permission[]>;
 
   // Artist operations
   getArtist(id: number): Promise<Artist | undefined>;
@@ -699,6 +710,103 @@ export class DatabaseStorage implements IStorage {
         basePrice: row.productTypes.basePrice,
       } : null
     })).filter(product => product.id && product.artwork);
+  }
+
+  // RBAC operations
+  async getUserRoles(userId: number): Promise<RoleType[]> {
+    const result = await db
+      .select({ name: roles.name })
+      .from(userRoles)
+      .innerJoin(roles, eq(userRoles.roleId, roles.id))
+      .where(and(eq(userRoles.userId, userId), eq(userRoles.isActive, true)));
+    
+    return result.map(r => r.name as RoleType);
+  }
+
+  async assignUserRole(userId: number, roleName: string): Promise<void> {
+    const roleResult = await db.select().from(roles).where(eq(roles.name, roleName)).limit(1);
+    if (!roleResult[0]) {
+      throw new Error(`Role ${roleName} not found`);
+    }
+
+    const existing = await db.select()
+      .from(userRoles)
+      .where(and(eq(userRoles.userId, userId), eq(userRoles.roleId, roleResult[0].id)))
+      .limit(1);
+
+    if (existing[0]) {
+      await db.update(userRoles)
+        .set({ isActive: true, assignedAt: new Date() })
+        .where(and(eq(userRoles.userId, userId), eq(userRoles.roleId, roleResult[0].id)));
+    } else {
+      await db.insert(userRoles).values({
+        userId,
+        roleId: roleResult[0].id,
+        isActive: true,
+        assignedAt: new Date()
+      });
+    }
+  }
+
+  async removeUserRole(userId: number, roleName: string): Promise<void> {
+    const roleResult = await db.select().from(roles).where(eq(roles.name, roleName)).limit(1);
+    if (!roleResult[0]) {
+      throw new Error(`Role ${roleName} not found`);
+    }
+
+    await db.update(userRoles)
+      .set({ isActive: false })
+      .where(and(eq(userRoles.userId, userId), eq(userRoles.roleId, roleResult[0].id)));
+  }
+
+  async hasRole(userId: number, roleName: string): Promise<boolean> {
+    const result = await db
+      .select()
+      .from(userRoles)
+      .innerJoin(roles, eq(userRoles.roleId, roles.id))
+      .where(and(
+        eq(userRoles.userId, userId),
+        eq(roles.name, roleName),
+        eq(userRoles.isActive, true)
+      ))
+      .limit(1);
+
+    return result.length > 0;
+  }
+
+  async createRole(role: InsertRole): Promise<Role> {
+    const [result] = await db.insert(roles).values(role).returning();
+    return result;
+  }
+
+  async getRoles(): Promise<Role[]> {
+    return await db.select().from(roles).where(eq(roles.isActive, true));
+  }
+
+  async createPermission(permission: InsertPermission): Promise<Permission> {
+    const [result] = await db.insert(permissions).values(permission).returning();
+    return result;
+  }
+
+  async getPermissions(): Promise<Permission[]> {
+    return await db.select().from(permissions);
+  }
+
+  async getRolePermissions(roleId: number): Promise<Permission[]> {
+    const result = await db
+      .select({
+        id: permissions.id,
+        name: permissions.name,
+        resource: permissions.resource,
+        action: permissions.action,
+        description: permissions.description,
+        createdAt: permissions.createdAt
+      })
+      .from(rolePermissions)
+      .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
+      .where(eq(rolePermissions.roleId, roleId));
+
+    return result;
   }
 }
 
