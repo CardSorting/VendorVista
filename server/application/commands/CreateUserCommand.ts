@@ -1,5 +1,4 @@
-// CQRS Commands following Command pattern and Apple's design philosophy
-// Simple, focused commands with clear intent
+import { RoleType } from "../../../shared/schema.js";
 
 export interface CreateUserCommand {
   username: string;
@@ -7,54 +6,11 @@ export interface CreateUserCommand {
   password: string;
   firstName?: string;
   lastName?: string;
-  bio?: string;
-  avatarUrl?: string;
+  role: RoleType;
 }
 
-export interface CreateArtistCommand {
-  userId: number;
-  displayName: string;
-  bio?: string;
-  specialties?: string[];
-  portfolioUrl?: string;
-}
-
-export interface CreateArtworkCommand {
-  title: string;
-  artistId: number;
-  imageUrl: string;
-  description?: string;
-  tags?: string[];
-  categoryId?: number;
-  isPublic?: boolean;
-}
-
-export interface UpdateUserProfileCommand {
-  userId: number;
-  firstName?: string;
-  lastName?: string;
-  bio?: string;
-  avatarUrl?: string;
-}
-
-export interface PromoteUserToArtistCommand {
-  userId: number;
-  displayName: string;
-  bio?: string;
-  specialties?: string[];
-  portfolioUrl?: string;
-}
-
-export interface VerifyArtistCommand {
-  artistId: number;
-}
-
-export interface FollowArtistCommand {
-  followerId: number;
-  artistId: number;
-}
-
-export interface UnfollowArtistCommand {
-  followerId: number;
-  artistId: number;
+export interface CreateUserResult {
+  success: boolean;
+  userId?: number;
+  error?: string;
 }

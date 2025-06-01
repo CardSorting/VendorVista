@@ -1,6 +1,43 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, primaryKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// RBAC Tables
+export const roles = pgTable("roles", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 50 }).notNull().unique(),
+  description: text("description"),
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow(),
+});
+
+export const permissions = pgTable("permissions", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull().unique(),
+  resource: varchar("resource", { length: 50 }).notNull(),
+  action: varchar("action", { length: 50 }).notNull(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow(),
+});
+
+export const rolePermissions = pgTable("rolePermissions", {
+  roleId: integer("roleId").notNull(),
+  permissionId: integer("permissionId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.roleId, table.permissionId] })
+}));
+
+export const userRoles = pgTable("userRoles", {
+  userId: integer("userId").notNull(),
+  roleId: integer("roleId").notNull(),
+  assignedBy: integer("assignedBy"),
+  assignedAt: timestamp("assignedAt").defaultNow(),
+  expiresAt: timestamp("expiresAt"),
+  isActive: boolean("isActive").default(true),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.userId, table.roleId] })
+}));
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -9,10 +46,12 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   firstName: varchar("firstName", { length: 100 }),
   lastName: varchar("lastName", { length: 100 }),
-  isArtist: boolean("isArtist").default(false),
   avatarUrl: text("avatarUrl"),
   bio: text("bio"),
+  isActive: boolean("isActive").default(true),
+  lastLoginAt: timestamp("lastLoginAt"),
   createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow(),
 });
 
 export const artists = pgTable("artists", {
@@ -166,6 +205,25 @@ export const insertReviewSchema = createInsertSchema(reviews).omit({
   isHelpful: true,
 });
 
+// RBAC Insert Schemas
+export const insertRoleSchema = createInsertSchema(roles).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPermissionSchema = createInsertSchema(permissions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRolePermissionSchema = createInsertSchema(rolePermissions).omit({
+  createdAt: true,
+});
+
+export const insertUserRoleSchema = createInsertSchema(userRoles).omit({
+  assignedAt: true,
+});
+
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -177,8 +235,34 @@ export const registerSchema = z.object({
   password: z.string().min(6),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  isArtist: z.boolean().default(false),
+  role: z.enum(['buyer', 'seller', 'admin']).default('buyer'),
 });
+
+// Role and Permission Enums
+export const RoleEnum = {
+  BUYER: 'buyer',
+  SELLER: 'seller', 
+  ADMIN: 'admin'
+} as const;
+
+export const ResourceEnum = {
+  USER: 'user',
+  ARTIST: 'artist',
+  ARTWORK: 'artwork',
+  PRODUCT: 'product',
+  ORDER: 'order',
+  CART: 'cart',
+  REVIEW: 'review',
+  ADMIN: 'admin'
+} as const;
+
+export const ActionEnum = {
+  CREATE: 'create',
+  READ: 'read',
+  UPDATE: 'update',
+  DELETE: 'delete',
+  MANAGE: 'manage'
+} as const;
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -200,5 +284,22 @@ export type Follow = typeof follows.$inferSelect;
 export type Like = typeof likes.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
+
+// RBAC Types
+export type Role = typeof roles.$inferSelect;
+export type InsertRole = z.infer<typeof insertRoleSchema>;
+export type Permission = typeof permissions.$inferSelect;
+export type InsertPermission = z.infer<typeof insertPermissionSchema>;
+export type RolePermission = typeof rolePermissions.$inferSelect;
+export type InsertRolePermission = z.infer<typeof insertRolePermissionSchema>;
+export type UserRole = typeof userRoles.$inferSelect;
+export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
+
+// Auth Types
 export type LoginData = z.infer<typeof loginSchema>;
 export type RegisterData = z.infer<typeof registerSchema>;
+
+// Domain Types
+export type RoleType = typeof RoleEnum[keyof typeof RoleEnum];
+export type ResourceType = typeof ResourceEnum[keyof typeof ResourceEnum];
+export type ActionType = typeof ActionEnum[keyof typeof ActionEnum];

@@ -1,163 +1,111 @@
-// Domain Entity - Following DDD and SOLID principles
-import { Entity } from '../common/Entity.js';
-import { Email, Username } from '../common/ValueObjects.js';
-import { UserCreatedEvent, UserPromotedToArtistEvent, UserPasswordChangedEvent } from '../events/UserEvents.js';
+import { RoleType } from "../../../shared/schema.js";
 
-export class User extends Entity<number> {
-  private _email: Email;
-  private _username: Username;
-  private _password: string;
-  private _firstName?: string;
-  private _lastName?: string;
-  private _isArtist: boolean;
-  private _avatarUrl?: string;
-  private _bio?: string;
-  private readonly _createdAt: Date;
+export interface UserProps {
+  id: number;
+  username: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+  bio?: string;
+  isActive: boolean;
+  lastLoginAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  roles: RoleType[];
+}
 
-  private constructor(
-    id: number,
-    email: Email,
-    username: Username,
-    password: string,
-    firstName?: string,
-    lastName?: string,
-    isArtist: boolean = false,
-    avatarUrl?: string,
-    bio?: string,
-    createdAt: Date = new Date()
-  ) {
-    super(id);
-    this._email = email;
-    this._username = username;
-    this._password = password;
-    this._firstName = firstName;
-    this._lastName = lastName;
-    this._isArtist = isArtist;
-    this._avatarUrl = avatarUrl;
-    this._bio = bio;
-    this._createdAt = createdAt;
+export class User {
+  private props: UserProps;
+
+  constructor(props: UserProps) {
+    this.props = { ...props };
   }
 
-  // Factory method for creating new users
-  static create(
-    id: number,
-    emailValue: string,
-    usernameValue: string,
-    password: string,
-    firstName?: string,
-    lastName?: string,
-    avatarUrl?: string,
-    bio?: string
-  ): User {
-    const email = new Email(emailValue);
-    const username = new Username(usernameValue);
-    
-    const user = new User(id, email, username, password, firstName, lastName, false, avatarUrl, bio);
-    user.addDomainEvent(new UserCreatedEvent(id, emailValue, usernameValue));
-    
-    return user;
-  }
-
-  // Factory method for reconstructing users from persistence
-  static fromPersistence(
-    id: number,
-    emailValue: string,
-    usernameValue: string,
-    password: string,
-    firstName?: string,
-    lastName?: string,
-    isArtist: boolean = false,
-    avatarUrl?: string,
-    bio?: string,
-    createdAt: Date = new Date()
-  ): User {
-    const email = new Email(emailValue);
-    const username = new Username(usernameValue);
-    
-    return new User(id, email, username, password, firstName, lastName, isArtist, avatarUrl, bio, createdAt);
-  }
-
-  // Getters
-  get email(): string {
-    return this._email.value;
+  get id(): number {
+    return this.props.id;
   }
 
   get username(): string {
-    return this._username.value;
+    return this.props.username;
   }
 
-  get password(): string {
-    return this._password;
+  get email(): string {
+    return this.props.email;
   }
 
-  get firstName(): string | undefined {
-    return this._firstName;
+  get fullName(): string {
+    const firstName = this.props.firstName || '';
+    const lastName = this.props.lastName || '';
+    return `${firstName} ${lastName}`.trim() || this.props.username;
   }
 
-  get lastName(): string | undefined {
-    return this._lastName;
+  get roles(): RoleType[] {
+    return [...this.props.roles];
   }
 
-  get isArtist(): boolean {
-    return this._isArtist;
+  get isActive(): boolean {
+    return this.props.isActive;
   }
 
-  get avatarUrl(): string | undefined {
-    return this._avatarUrl;
+  hasRole(role: RoleType): boolean {
+    return this.props.roles.includes(role);
   }
 
-  get bio(): string | undefined {
-    return this._bio;
+  isBuyer(): boolean {
+    return this.hasRole('buyer');
   }
 
-  get createdAt(): Date {
-    return this._createdAt;
+  isSeller(): boolean {
+    return this.hasRole('seller');
   }
 
-  // Business methods
-  updatePassword(newPassword: string): void {
-    if (newPassword.length < 6) {
-      throw new Error('Password must be at least 6 characters long');
+  isAdmin(): boolean {
+    return this.hasRole('admin');
+  }
+
+  canAccessAdminPanel(): boolean {
+    return this.isAdmin();
+  }
+
+  canCreateArtwork(): boolean {
+    return this.isSeller() || this.isAdmin();
+  }
+
+  canManageProducts(): boolean {
+    return this.isSeller() || this.isAdmin();
+  }
+
+  canPurchase(): boolean {
+    return this.isBuyer() || this.isSeller() || this.isAdmin();
+  }
+
+  addRole(role: RoleType): void {
+    if (!this.hasRole(role)) {
+      this.props.roles.push(role);
     }
-    this._password = newPassword;
-    this.addDomainEvent(new UserPasswordChangedEvent(this.id));
   }
 
-  getFullName(): string {
-    return [this._firstName, this._lastName].filter(Boolean).join(' ');
+  removeRole(role: RoleType): void {
+    this.props.roles = this.props.roles.filter(r => r !== role);
   }
 
-  promoteToArtist(): User {
-    if (this._isArtist) {
-      throw new Error('User is already an artist');
-    }
-    
-    const promotedUser = new User(
-      this.id,
-      this._email,
-      this._username,
-      this._password,
-      this._firstName,
-      this._lastName,
-      true,
-      this._avatarUrl,
-      this._bio,
-      this._createdAt
-    );
-    
-    promotedUser.addDomainEvent(new UserPromotedToArtistEvent(this.id, this.id));
-    return promotedUser;
+  updateLastLogin(): void {
+    this.props.lastLoginAt = new Date();
+    this.props.updatedAt = new Date();
   }
 
-  updateProfile(firstName?: string, lastName?: string, bio?: string, avatarUrl?: string): void {
-    this._firstName = firstName;
-    this._lastName = lastName;
-    this._bio = bio;
-    this._avatarUrl = avatarUrl;
+  deactivate(): void {
+    this.props.isActive = false;
+    this.props.updatedAt = new Date();
   }
 
-  changeEmail(newEmailValue: string): void {
-    const newEmail = new Email(newEmailValue);
-    this._email = newEmail;
+  activate(): void {
+    this.props.isActive = true;
+    this.props.updatedAt = new Date();
+  }
+
+  toPlainObject(): UserProps {
+    return { ...this.props };
   }
 }
