@@ -1,0 +1,96 @@
+2025-06-02 06:27:41.75
+296bc332
+User
+Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+2025-06-02 06:27:41.75
+296bc332
+User
+at ServerResponse.setHeader (node:_http_outgoing:655:11)
+2025-06-02 06:27:41.75
+296bc332
+User
+at ServerResponse.header (/home/runner/workspace/node_modules/express/lib/response.js:794:10)
+2025-06-02 06:27:41.75
+296bc332
+User
+at ServerResponse.json (/home/runner/workspace/node_modules/express/lib/response.js:275:10)
+2025-06-02 06:27:41.75
+296bc332
+User
+at res.json (file:///home/runner/workspace/dist/index.js:1815:28)
+2025-06-02 06:27:41.75
+296bc332
+User
+at file:///home/runner/workspace/dist/index.js:1837:24
+2025-06-02 06:27:41.75
+296bc332
+User
+at Layer.handle_error (/home/runner/workspace/node_modules/express/lib/router/layer.js:71:5)
+2025-06-02 06:27:41.75
+296bc332
+User
+at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:326:13)
+2025-06-02 06:27:41.75
+296bc332
+User
+at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+2025-06-02 06:27:41.75
+296bc332
+User
+at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+2025-06-02 06:27:41.75
+296bc332
+User
+at Immediate.next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+2025-06-02 06:28:02.81
+296bc332
+User
+12:28:02 PM [express] GET /api/callback 302 in 353ms
+2025-06-02 06:28:03.00
+296bc332
+User
+12:28:03 PM [express] GET /api/login 302 in 95ms
+2025-06-02 06:28:03.00
+296bc332
+User
+Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+2025-06-02 06:28:03.00
+296bc332
+User
+at ServerResponse.setHeader (node:_http_outgoing:655:11)
+2025-06-02 06:28:03.00
+296bc332
+User
+at ServerResponse.header (/home/runner/workspace/node_modules/express/lib/response.js:794:10)
+2025-06-02 06:28:03.00
+296bc332
+User
+at ServerResponse.json (/home/runner/workspace/node_modules/express/lib/response.js:275:10)
+2025-06-02 06:28:03.00
+296bc332
+User
+at res.json (file:///home/runner/workspace/dist/index.js:1815:28)
+2025-06-02 06:28:03.00
+296bc332
+User
+at file:///home/runner/workspace/dist/index.js:1837:24
+2025-06-02 06:28:03.00
+296bc332
+User
+at Layer.handle_error (/home/runner/workspace/node_modules/express/lib/router/layer.js:71:5)
+2025-06-02 06:28:03.00
+296bc332
+User
+at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:326:13)
+2025-06-02 06:28:03.00
+296bc332
+User
+at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+2025-06-02 06:28:03.00
+296bc332
+User
+at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+2025-06-02 06:28:03.00
+296bc332
+User
+at Immediate.next (/home/runner/workspace/node_modules/express/lib/route
