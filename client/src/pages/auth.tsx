@@ -17,7 +17,7 @@ export default function Auth() {
   }, [isAuthenticated, setLocation]);
 
   const handleLogin = () => {
-    window.location.href = "/auth/login";
+    window.location.href = "/api/login";
   };
 
   if (isLoading) {
@@ -71,7 +71,7 @@ export default function Auth() {
                 size="lg"
               >
                 <LogIn className="mr-2 h-4 w-4" />
-                Continue with Auth0
+                Continue with Replit
               </Button>
             </div>
           </CardContent>

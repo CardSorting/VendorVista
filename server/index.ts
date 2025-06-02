@@ -1,58 +1,10 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { auth } from "express-openid-connect";
-import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
-import { pool } from "./db.js";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// Database-backed session configuration
-const PgSession = connectPgSimple(session);
-
-app.use(session({
-  store: new PgSession({
-    pool: pool,
-    tableName: 'session',
-    createTableIfMissing: true
-  }),
-  secret: process.env.SESSION_SECRET || 'fallback-secret-key-for-development',
-  resave: false,
-  saveUninitialized: false,
-  rolling: true,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    sameSite: 'lax'
-  }
-}));
-
-// Auth0 configuration
-const config = {
-  authRequired: false,
-  auth0Logout: true,
-  secret: process.env.AUTH0_SECRET || 'a-long-random-string-for-development-only',
-  baseURL: 'https://vendor-vista-0xjzy.replit.app',
-  clientID: '1KVvM9Rfr8lWUgYyVRFBCxxaWZurH7se',
-  issuerBaseURL: 'https://dev-57c4wim3kish0u23.us.auth0.com',
-  session: {
-    absoluteDuration: 7 * 24 * 60 * 60 * 1000, // 7 days
-    rolling: true,
-    rollingDuration: 24 * 60 * 60 * 1000, // 24 hours
-  },
-  routes: {
-    login: '/auth/login',
-    logout: '/auth/logout',
-    callback: '/auth/callback',
-  },
-};
-
-// Auth router attaches /auth/login, /auth/logout, and /auth/callback routes
-app.use(auth(config));
 
 app.use((req, res, next) => {
   const start = Date.now();

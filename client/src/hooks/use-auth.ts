@@ -36,7 +36,7 @@ export function useAuth() {
       }
 
       // Make new request
-      activeAuthRequest = fetch("/api/auth/me", {
+      activeAuthRequest = fetch("/api/auth/user", {
         credentials: 'include',
         cache: 'no-cache'
       })
@@ -69,14 +69,14 @@ export function useAuth() {
   };
 
   const login = () => {
-    window.location.href = "/auth/login";
+    window.location.href = "/api/login";
   };
 
   const logout = () => {
     // Clear cache on logout
     authCache = null;
     setUser(null);
-    window.location.href = "/auth/logout";
+    window.location.href = "/api/logout";
   };
 
   const updateUser = (updates: Partial<User>) => {
