@@ -22,10 +22,12 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'fallback-secret-key-for-development',
   resave: false,
   saveUninitialized: false,
+  rolling: true,
   cookie: {
-    secure: false, // Set to true in production with HTTPS
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    sameSite: 'lax'
   }
 }));
 
@@ -33,10 +35,15 @@ app.use(session({
 const config = {
   authRequired: false,
   auth0Logout: true,
-  secret: process.env.AUTH0_SECRET,
+  secret: process.env.AUTH0_SECRET || 'a-long-random-string-for-development-only',
   baseURL: 'https://vendor-vista-0xjzy.replit.app',
   clientID: '1KVvM9Rfr8lWUgYyVRFBCxxaWZurH7se',
   issuerBaseURL: 'https://dev-57c4wim3kish0u23.us.auth0.com',
+  session: {
+    absoluteDuration: 7 * 24 * 60 * 60 * 1000, // 7 days
+    rolling: true,
+    rollingDuration: 24 * 60 * 60 * 1000, // 24 hours
+  },
   routes: {
     login: '/auth/login',
     logout: '/auth/logout',

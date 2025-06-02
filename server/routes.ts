@@ -13,11 +13,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth0 Authentication routes
   app.get("/api/auth/me", async (req, res) => {
     try {
+      console.log("Auth check - isAuthenticated:", req.oidc.isAuthenticated());
+      console.log("Auth check - user exists:", !!req.oidc.user);
+      
       if (!req.oidc.isAuthenticated()) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
       const auth0User = req.oidc.user;
+      console.log("Auth0 user email:", auth0User?.email);
       
       if (!auth0User || !auth0User.email) {
         return res.status(400).json({ error: "Invalid user data from Auth0" });
