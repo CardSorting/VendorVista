@@ -1,0 +1,136 @@
+2025-06-02 11:19:12.26
+bb0d8bed
+User
+minPrice: undefined,
+2025-06-02 11:19:12.26
+bb0d8bed
+User
+maxPrice: undefined,
+2025-06-02 11:19:12.26
+bb0d8bed
+User
+sortBy: 'featured',
+2025-06-02 11:19:12.26
+bb0d8bed
+User
+q: undefined
+2025-06-02 11:19:12.26
+bb0d8bed
+User
+}
+2025-06-02 11:19:12.31
+bb0d8bed
+User
+Found 4 total products
+2025-06-02 11:19:12.31
+bb0d8bed
+User
+After filtering: 0 products
+2025-06-02 11:19:12.36
+bb0d8bed
+User
+5:19:12 PM [express] GET /api/products 304 in 136ms :: []
+2025-06-02 11:19:12.37
+bb0d8bed
+User
+5:19:12 PM [express] GET /api/categories 304 in 133ms :: [{"id":21,"name":"Digital Art","description…
+2025-06-02 11:19:33.54
+bb0d8bed
+User
+5:19:33 PM [express] GET /api/login 302 in 93ms
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+OIDC Claims received: {
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+"sub": "20999260",
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+"email": "willcruzdesigner@gmail.com",
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+"username": "0xjzy",
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+"first_name": "Egg",
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+"last_name": null,
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+"auth_time": 1748884776,
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+"at_hash": "fM1D7OfqUbPjEojEOqDNvA",
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+"aud": "bb0d8bed-0570-4855-ab73-0433dc2739f6",
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+"exp": 1748888376,
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+"iat": 1748884776,
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+"iss": "https://replit.com/oidc"
+2025-06-02 11:19:36.92
+bb0d8bed
+User
+}
+2025-06-02 11:19:37.27
+bb0d8bed
+User
+5:19:37 PM [express] GET /api/callback 302 in 578ms
+2025-06-02 11:19:38.36
+bb0d8bed
+User
+5:19:38 PM [express] GET /api/auth/user 304 in 140ms :: {"id":20999260,"username":"0xjzy","email":"w…
+2025-06-02 11:19:38.50
+bb0d8bed
+User
+Product API request with filters: {
+2025-06-02 11:19:38.50
+bb0d8bed
+User
+categoryId: undefined,
+2025-06-02 11:19:38.50
+bb0d8bed
+User
+productTypeId: undefined,
+2025-06-02 11:19:38.50
+bb0d8bed
+User
+tags: undefined,
+2025-06-02 11:19:38.50
+bb0d8bed
+User
+minPrice: undefined,
+2025-06-02 11:19:38.50
+bb0d8bed
+User
+maxPrice: undefined,
+2025-06-02 11:19:38.50
+bb0d8bed
+User
+sortBy: 'featured',
+2025-06-02 11:19:38.50
+bb0d8bed
+User
+q: undefined
+2025-06-02 11:19:38.50
+bb0d8bed
+User
+}
