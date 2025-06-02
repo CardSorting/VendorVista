@@ -457,17 +457,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enhanced Cart API Routes
-  app.post("/api/cart/add", async (req, res) => {
+  app.post("/api/cart/add", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-
-      const auth0User = req.oidc.user;
-      const user = await storage.getUserByEmail(auth0User.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
+      const userId = req.user.claims.sub;
 
       const { productId, quantity = 1 } = req.body;
       
@@ -476,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       await storage.addCartItem({
-        userId: user.id,
+        userId: userId,
         productId: parseInt(productId),
         quantity: parseInt(quantity)
       });
@@ -487,11 +479,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/cart/:itemId", async (req, res) => {
+  app.patch("/api/cart/:itemId", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
 
       const itemId = parseInt(req.params.itemId);
       const { quantity } = req.body;
