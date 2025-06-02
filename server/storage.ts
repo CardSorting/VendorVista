@@ -4,17 +4,19 @@ import { eq, and, desc, asc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
-  getUser(id: number): Promise<User | undefined>;
+  // (IMPORTANT) these user operations are mandatory for Replit Auth.
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
+  updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
 
   // RBAC operations
-  getUserRoles(userId: number): Promise<RoleType[]>;
-  assignUserRole(userId: number, roleName: string): Promise<void>;
-  removeUserRole(userId: number, roleName: string): Promise<void>;
-  hasRole(userId: number, roleName: string): Promise<boolean>;
+  getUserRoles(userId: string): Promise<RoleType[]>;
+  assignUserRole(userId: string, roleName: string): Promise<void>;
+  removeUserRole(userId: string, roleName: string): Promise<void>;
+  hasRole(userId: string, roleName: string): Promise<boolean>;
   createRole(role: InsertRole): Promise<Role>;
   getRoles(): Promise<Role[]>;
   createPermission(permission: InsertPermission): Promise<Permission>;
@@ -23,7 +25,7 @@ export interface IStorage {
 
   // Artist operations
   getArtist(id: number): Promise<Artist | undefined>;
-  getArtistByUserId(userId: number): Promise<Artist | undefined>;
+  getArtistByUserId(userId: string): Promise<Artist | undefined>;
   createArtist(artist: InsertArtist): Promise<Artist>;
   updateArtist(id: number, updates: Partial<Artist>): Promise<Artist | undefined>;
   getArtists(limit?: number, offset?: number): Promise<Artist[]>;
@@ -50,27 +52,27 @@ export interface IStorage {
   updateProduct(id: number, updates: Partial<Product>): Promise<Product | undefined>;
 
   // Cart operations
-  getCartItems(userId: number): Promise<CartItem[]>;
+  getCartItems(userId: string): Promise<CartItem[]>;
   addCartItem(item: InsertCartItem): Promise<CartItem>;
   updateCartItem(id: number, quantity: number): Promise<CartItem | undefined>;
   removeCartItem(id: number): Promise<boolean>;
-  clearCart(userId: number): Promise<void>;
+  clearCart(userId: string): Promise<void>;
 
   // Order operations
   createOrder(order: InsertOrder): Promise<Order>;
   getOrder(id: number): Promise<Order | undefined>;
-  getOrdersByUser(userId: number): Promise<Order[]>;
+  getOrdersByUser(userId: string): Promise<Order[]>;
   updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
   addOrderItem(orderItem: Omit<OrderItem, 'id'>): Promise<OrderItem>;
   getOrderItems(orderId: number): Promise<OrderItem[]>;
 
   // Social operations
-  followArtist(followerId: number, artistId: number): Promise<Follow>;
-  unfollowArtist(followerId: number, artistId: number): Promise<boolean>;
-  isFollowing(followerId: number, artistId: number): Promise<boolean>;
-  likeArtwork(userId: number, artworkId: number): Promise<Like>;
-  unlikeArtwork(userId: number, artworkId: number): Promise<boolean>;
-  isLiked(userId: number, artworkId: number): Promise<boolean>;
+  followArtist(followerId: string, artistId: number): Promise<Follow>;
+  unfollowArtist(followerId: string, artistId: number): Promise<boolean>;
+  isFollowing(followerId: string, artistId: number): Promise<boolean>;
+  likeArtwork(userId: string, artworkId: number): Promise<Like>;
+  unlikeArtwork(userId: string, artworkId: number): Promise<boolean>;
+  isLiked(userId: string, artworkId: number): Promise<boolean>;
 
   // Review operations
   getReviews(productId: number): Promise<Review[]>;
@@ -78,7 +80,7 @@ export interface IStorage {
   createReview(review: InsertReview): Promise<Review>;
   updateReview(id: number, updates: Partial<Review>): Promise<Review | undefined>;
   deleteReview(id: number): Promise<boolean>;
-  getUserReview(userId: number, productId: number): Promise<Review | undefined>;
+  getUserReview(userId: string, productId: number): Promise<Review | undefined>;
   getProductRating(productId: number): Promise<{ averageRating: number; totalReviews: number }>;
   markReviewHelpful(reviewId: number): Promise<void>;
 }
