@@ -55,15 +55,15 @@ export const userRoles = pgTable("userRoles", {
 // (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
+  username: varchar("username"),
   email: varchar("email").unique(),
+  password: text("password"),
   firstName: varchar("firstName"),
   lastName: varchar("lastName"),
-  profileImageUrl: varchar("profileImageUrl"),
+  isArtist: boolean("isArtist"),
+  avatarUrl: text("avatarUrl"),
   bio: text("bio"),
-  isActive: boolean("isActive").default(true),
-  lastLoginAt: timestamp("lastLoginAt"),
   createdAt: timestamp("createdAt").defaultNow(),
-  updatedAt: timestamp("updatedAt").defaultNow(),
 });
 
 export const artists = pgTable("artists", {

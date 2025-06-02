@@ -62,7 +62,7 @@ async function upsertUser(
     email: claims["email"],
     firstName: claims["given_name"] || claims["first_name"] || "",
     lastName: claims["family_name"] || claims["last_name"] || "",
-    profileImageUrl: claims["picture"] || claims["profile_image_url"],
+    avatarUrl: claims["picture"] || claims["profile_image_url"],
   });
 }
 
