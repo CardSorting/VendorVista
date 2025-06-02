@@ -1,0 +1,126 @@
+2025-06-02 08:03:30.10
+831601ba
+User
+file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345
+2025-06-02 08:03:30.10
+831601ba
+User
+o?t(o):n(u)},"cb"),s=new r(function(o,u){n=o,t=u}).catch(o=>{throw Error.captureStackTrace(
+2025-06-02 08:03:30.10
+831601ba
+User
+^
+2025-06-02 08:03:30.10
+831601ba
+User
+2025-06-02 08:03:30.10
+831601ba
+User
+error: column "first_name" of relation "users" does not exist
+2025-06-02 08:03:30.10
+831601ba
+User
+at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+2025-06-02 08:03:30.10
+831601ba
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-06-02 08:03:30.10
+831601ba
+User
+at async NeonPreparedQuery.execute (file:///home/runner/workspace/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+2025-06-02 08:03:30.10
+831601ba
+User
+at async DatabaseStorage.upsertUser (file:///home/runner/workspace/dist/index.js:313:20)
+2025-06-02 08:03:30.10
+831601ba
+User
+at async upsertUser (file:///home/runner/workspace/dist/index.js:940:3)
+2025-06-02 08:03:30.10
+831601ba
+User
+at async Strategy.verify [as _verify] (file:///home/runner/workspace/dist/index.js:957:5) {
+2025-06-02 08:03:30.10
+831601ba
+User
+length: 128,
+2025-06-02 08:03:30.10
+831601ba
+User
+severity: 'ERROR',
+2025-06-02 08:03:30.10
+831601ba
+User
+code: '42703',
+2025-06-02 08:03:30.10
+831601ba
+User
+detail: undefined,
+2025-06-02 08:03:30.10
+831601ba
+User
+hint: undefined,
+2025-06-02 08:03:30.10
+831601ba
+User
+position: '37',
+2025-06-02 08:03:30.10
+831601ba
+User
+internalPosition: undefined,
+2025-06-02 08:03:30.10
+831601ba
+User
+internalQuery: undefined,
+2025-06-02 08:03:30.10
+831601ba
+User
+where: undefined,
+2025-06-02 08:03:30.10
+831601ba
+User
+schema: undefined,
+2025-06-02 08:03:30.10
+831601ba
+User
+table: undefined,
+2025-06-02 08:03:30.10
+831601ba
+User
+column: undefined,
+2025-06-02 08:03:30.10
+831601ba
+User
+dataType: undefined,
+2025-06-02 08:03:30.10
+831601ba
+User
+constraint: undefined,
+2025-06-02 08:03:30.10
+831601ba
+User
+file: 'parse_target.c',
+2025-06-02 08:03:30.10
+831601ba
+User
+line: '1066',
+2025-06-02 08:03:30.10
+831601ba
+User
+routine: 'checkInsertTargets'
+2025-06-02 08:03:30.10
+831601ba
+User
+}
+2025-06-02 08:03:30.10
+831601ba
+User
+2025-06-02 08:03:30.10
+831601ba
+User
+Node.js v20.18.1
+2025-06-02 08:03:30.12
+831601ba
+System
+command finished with error [npm run start]: exit status 1
