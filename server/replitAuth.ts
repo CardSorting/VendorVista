@@ -84,7 +84,6 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  // Register strategies for all Replit domains
   for (const domain of process.env
     .REPLIT_DOMAINS!.split(",")) {
     const strategy = new Strategy(
@@ -98,18 +97,6 @@ export async function setupAuth(app: Express) {
     );
     passport.use(strategy);
   }
-
-  // Also register a strategy for localhost development
-  const localhostStrategy = new Strategy(
-    {
-      name: `replitauth:localhost`,
-      config,
-      scope: "openid email profile offline_access",
-      callbackURL: `https://${process.env.REPLIT_DOMAINS!.split(",")[0]}/api/callback`,
-    },
-    verify,
-  );
-  passport.use(localhostStrategy);
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
