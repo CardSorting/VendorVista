@@ -1,0 +1,142 @@
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+o?t(o):n(u)},"cb"),s=new r(function(o,u){n=o,t=u}).catch(o=>{throw Error.captureStackTrace(
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+^
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+error: null value in column "password" of relation "users" violates not-null constraint
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+at async NeonPreparedQuery.execute (file:///home/runner/workspace/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+at async DatabaseStorage.upsertUser (file:///home/runner/workspace/dist/index.js:313:20)
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+at async upsertUser (file:///home/runner/workspace/dist/index.js:941:3)
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+at async Strategy.verify [as _verify] (file:///home/runner/workspace/dist/index.js:959:5) {
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+length: 293,
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+severity: 'ERROR',
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+code: '23502',
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+detail: 'Failing row contains (20999260, 0xjzy, willcruzdesigner@gmail.com, null, Egg, , f, null, null, 2025-06-02 17:10:38.411419).',
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+hint: undefined,
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+position: undefined,
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+internalPosition: undefined,
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+internalQuery: undefined,
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+where: undefined,
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+schema: 'public',
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+table: 'users',
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+column: 'password',
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+dataType: undefined,
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+constraint: undefined,
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+file: 'execMain.c',
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+line: '2006',
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+routine: 'ExecConstraints'
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+}
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+2025-06-02 11:10:38.44
+1e2bb77f
+User
+Node.js v20.18.1
+2025-06-02 11:10:38.46
+1e2bb77f
+User
+npm notice
+2025-06-02 11:10:38.46
+1e2bb77f
+User
+npm notice New major version of npm available! 10.8.2 -> 11.4.1
+2025-06-02 11:10:38.46
+1e2bb77f
+User
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.4.1
+2025-06-02 11:10:38.46
+1e2bb77f
+User
+npm notice To update run: npm install -g npm@11.4.1
+2025-06-02 11:10:38.46
+1e2bb77f
+User
+npm notice
+2025-06-02 11:10:38.46
+1e2bb77f
+System
+command finished with error [npm run start]: exit status 1
