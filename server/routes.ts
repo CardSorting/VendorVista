@@ -1,11 +1,13 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, insertArtworkSchema, insertProductSchema, insertCartItemSchema, insertReviewSchema } from "@shared/schema";
+import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, insertArtworkSchema, insertProductSchema, insertCartItemSchema, insertReviewSchema, products } from "@shared/schema";
 import { z } from "zod";
 import { registerProductRoutes } from "./routes-product";
 import { registerRBACDemoRoutes } from "./routes-rbac-demo";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -150,8 +152,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         categoryId, productTypeId, tags, minPrice, maxPrice, sortBy, q
       });
 
-      // Get all products with relationships
-      const allProducts = await storage.getAllProductsWithDetails();
+      // Get all products - simplified for now
+      const allProducts = await storage.getArtworkList({}, 100, 0);
       console.log(`Found ${allProducts.length} total products`);
       
       // Apply domain-driven filtering

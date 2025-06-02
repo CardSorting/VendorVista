@@ -84,6 +84,9 @@ export interface IStorage {
   getUserReview(userId: string, productId: number): Promise<Review | undefined>;
   getProductRating(productId: number): Promise<{ averageRating: number; totalReviews: number }>;
   markReviewHelpful(reviewId: number): Promise<void>;
+
+  // Additional methods
+  getAllProductsWithDetails(): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -526,6 +529,38 @@ export class DatabaseStorage implements IStorage {
       .where(eq(rolePermissions.roleId, roleId));
     
     return rolePermissionRecords;
+  }
+
+  // Additional methods
+  async getAllProductsWithDetails(): Promise<any[]> {
+    return await db
+      .select({
+        id: products.id,
+        price: products.price,
+        isActive: products.isActive,
+        productTypeId: products.productTypeId,
+        productType: {
+          id: productTypes.id,
+          name: productTypes.name,
+        },
+        artwork: {
+          id: artwork.id,
+          title: artwork.title,
+          tags: artwork.tags,
+          categoryId: artwork.categoryId,
+          isTrending: artwork.isTrending,
+          artist: {
+            id: artists.id,
+            displayName: artists.displayName,
+            isVerified: artists.isVerified,
+          },
+        },
+      })
+      .from(products)
+      .leftJoin(productTypes, eq(products.productTypeId, productTypes.id))
+      .leftJoin(artwork, eq(products.artworkId, artwork.id))
+      .leftJoin(artists, eq(artwork.artistId, artists.id))
+      .orderBy(desc(products.id));
   }
 }
 
