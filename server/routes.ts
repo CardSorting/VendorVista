@@ -502,11 +502,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/cart/:itemId", async (req, res) => {
+  app.delete("/api/cart/:itemId", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
 
       const itemId = parseInt(req.params.itemId);
       const success = await storage.removeCartItem(itemId);
@@ -521,19 +518,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/cart/clear", async (req, res) => {
+  app.post("/api/cart/clear", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-
-      const auth0User = req.oidc.user;
-      const user = await storage.getUserByEmail(auth0User.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      await storage.clearCart(user.id);
+      const userId = req.user.claims.sub;
+      await storage.clearCart(userId);
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to clear cart" });
@@ -541,17 +529,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Order Management API Routes
-  app.post("/api/orders", async (req, res) => {
+  app.post("/api/orders", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-
-      const auth0User = req.oidc.user;
-      const user = await storage.getUserByEmail(auth0User.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
+      const userId = req.user.claims.sub;
 
       const { shippingAddress } = req.body;
       
