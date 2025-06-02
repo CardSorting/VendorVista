@@ -1,4 +1,4 @@
-import { users, artists, categories, artwork, productTypes, products, cartItems, orders, orderItems, follows, likes, reviews, roles, permissions, rolePermissions, userRoles, type User, type InsertUser, type Artist, type InsertArtist, type Category, type Artwork, type InsertArtwork, type ProductType, type Product, type InsertProduct, type CartItem, type InsertCartItem, type Order, type InsertOrder, type OrderItem, type Follow, type Like, type Review, type InsertReview, type Role, type InsertRole, type Permission, type InsertPermission, type RoleType } from "@shared/schema.js";
+import { users, artists, categories, artwork, productTypes, products, cartItems, orders, orderItems, follows, likes, reviews, roles, permissions, rolePermissions, userRoles, type User, type InsertUser, type UpsertUser, type Artist, type InsertArtist, type Category, type Artwork, type InsertArtwork, type ProductType, type Product, type InsertProduct, type CartItem, type InsertCartItem, type Order, type InsertOrder, type OrderItem, type Follow, type Like, type Review, type InsertReview, type Role, type InsertRole, type Permission, type InsertPermission, type RoleType } from "@shared/schema.js";
 import { db } from "./db.js";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
 
@@ -381,7 +381,7 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
-  async clearCart(userId: number): Promise<void> {
+  async clearCart(userId: string): Promise<void> {
     await db.delete(cartItems).where(eq(cartItems.userId, userId));
   }
 
