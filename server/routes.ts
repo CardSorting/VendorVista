@@ -3,142 +3,43 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, insertArtworkSchema, insertProductSchema, insertCartItemSchema, insertReviewSchema } from "@shared/schema";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
 import { registerProductRoutes } from "./routes-product";
 import { registerRBACDemoRoutes } from "./routes-rbac-demo";
-import { requireAuth, requireSeller, requireAdmin, requireSellerOrAdmin } from "./middleware/simple-auth";
-import { Auth0RoleManager } from "./auth0-setup";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth0 Authentication routes
-  app.get("/api/auth/me", async (req, res) => {
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      console.log("Auth check - isAuthenticated:", req.oidc.isAuthenticated());
-      console.log("Auth check - user exists:", !!req.oidc.user);
-      
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-
-      const auth0User = req.oidc.user;
-      console.log("Auth0 user email:", auth0User?.email);
-      
-      if (!auth0User || !auth0User.email) {
-        return res.status(400).json({ error: "Invalid user data from Auth0" });
-      }
-      
-      // Check if user exists in our database
-      let user = await storage.getUserByEmail(auth0User.email);
-      
-      if (!user) {
-        // Create new user from Auth0 profile
-        user = await storage.createUser({
-          username: auth0User.nickname || auth0User.email.split('@')[0],
-          email: auth0User.email,
-          password: '', // Not needed for Auth0 users
-          firstName: auth0User.given_name || null,
-          lastName: auth0User.family_name || null,
-          avatarUrl: auth0User.picture || null,
-        });
-      }
-
-      // Extract roles from Auth0 (you'll need to configure these in Auth0)
-      const userRoles = auth0User['https://artistmarket.com/roles'] || ['buyer'];
-      const userPermissions = auth0User['https://artistmarket.com/permissions'] || [];
-
-      res.json({ 
-        user: { 
-          ...user, 
-          password: undefined,
-          roles: userRoles,
-          permissions: userPermissions
-        },
-        isAuthenticated: true 
-      });
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
     } catch (error) {
-      console.error("Get user error:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.get("/api/auth/status", (req, res) => {
-    res.json({ 
-      isAuthenticated: req.oidc.isAuthenticated(),
-      user: req.oidc.isAuthenticated() ? req.oidc.user : null
-    });
-  });
-
-  // Test Auth0 Management API credentials
-  app.get("/api/auth/test-credentials", async (req, res) => {
-    const auth0ClientId = process.env.AUTH0_MANAGEMENT_CLIENT_ID;
-    const auth0ClientSecret = process.env.AUTH0_MANAGEMENT_CLIENT_SECRET;
-    
-    res.json({
-      hasClientId: !!auth0ClientId,
-      hasClientSecret: !!auth0ClientSecret,
-      clientIdPreview: auth0ClientId ? auth0ClientId.substring(0, 8) + '...' : 'missing'
-    });
-  });
-
-  // Auth0 RBAC Setup endpoint (initial setup - no auth required)
-  app.post("/api/auth/setup-roles", async (req, res) => {
-    try {
-      // Check for required Auth0 Management API credentials
-      const auth0Domain = process.env.AUTH0_DOMAIN || 'dev-57c4wim3kish0u23.us.auth0.com';
-      const auth0ClientId = process.env.AUTH0_MANAGEMENT_CLIENT_ID;
-      const auth0ClientSecret = process.env.AUTH0_MANAGEMENT_CLIENT_SECRET;
-      const auth0Audience = process.env.AUTH0_AUDIENCE || `https://${auth0Domain}/api/v2/`;
-
-      if (!auth0ClientId || !auth0ClientSecret) {
-        return res.status(400).json({ 
-          error: "Auth0 Management API credentials required",
-          required: ["AUTH0_MANAGEMENT_CLIENT_ID", "AUTH0_MANAGEMENT_CLIENT_SECRET"],
-          message: "Please provide Auth0 Management API credentials to set up roles and permissions"
-        });
-      }
-
-      const roleManager = new Auth0RoleManager({
-        domain: auth0Domain,
-        clientId: auth0ClientId,
-        clientSecret: auth0ClientSecret,
-        audience: auth0Audience
-      });
-
-      await roleManager.setupDefaultRoles();
-      
-      res.json({ 
-        success: true, 
-        message: "Auth0 roles and permissions have been set up successfully",
-        roles: ["buyer", "seller", "admin"],
-        domain: auth0Domain
-      });
-    } catch (error: any) {
-      console.error("Auth0 setup error:", error);
-      res.status(500).json({ 
-        error: "Failed to set up Auth0 roles and permissions",
-        details: error.message
-      });
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
   // User routes
   app.get("/api/users/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const user = await storage.getUser(id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
       
-      const { password, ...userResponse } = user;
-      res.json(userResponse);
+      res.json(user);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
-  // Artist routes (seller/admin only)
-  app.post("/api/artists", requireSellerOrAdmin, async (req, res) => {
+  // Artist routes 
+  app.post("/api/artists", isAuthenticated, async (req, res) => {
     try {
       const data = insertArtistSchema.parse(req.body);
       const artist = await storage.createArtist(data);
@@ -184,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/artists/user/:userId", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const artist = await storage.getArtistByUserId(userId);
       if (!artist) {
         return res.status(404).json({ message: "Artist profile not found" });
@@ -362,19 +263,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cart routes
-  app.get("/api/cart", async (req, res) => {
+  app.get("/api/cart", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-
-      const auth0User = req.oidc.user;
-      const user = await storage.getUserByEmail(auth0User.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      const cartItems = await storage.getCartItems(user.id);
+      const userId = req.user.claims.sub;
+      const cartItems = await storage.getCartItems(userId);
       res.json(cartItems);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch cart items" });
@@ -383,7 +275,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/cart/:userId", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const cartItems = await storage.getCartItems(userId);
       res.json(cartItems);
     } catch (error) {
