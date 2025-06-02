@@ -783,7 +783,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Review not found" });
       }
 
-      if (existingReview.userId !== user.id) {
+      if (existingReview.userId !== userId) {
         return res.status(403).json({ error: "Not authorized to edit this review" });
       }
 
@@ -801,21 +801,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/reviews/:reviewId", async (req, res) => {
+  app.delete("/api/reviews/:reviewId", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-
-      const auth0User = req.oidc.user;
-      if (!auth0User?.email) {
-        return res.status(400).json({ error: "Invalid user data" });
-      }
-
-      const user = await storage.getUserByEmail(auth0User.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
+      const userId = req.user.claims.sub;
 
       const reviewId = parseInt(req.params.reviewId);
       const existingReview = await storage.getReview(reviewId);
@@ -824,7 +812,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Review not found" });
       }
 
-      if (existingReview.userId !== user.id) {
+      if (existingReview.userId !== userId) {
         return res.status(403).json({ error: "Not authorized to delete this review" });
       }
 
