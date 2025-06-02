@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./storage-replit";
 import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, insertArtworkSchema, insertProductSchema, insertCartItemSchema, insertReviewSchema, products } from "@shared/schema";
 import { z } from "zod";
 import { registerProductRoutes } from "./routes-product";
