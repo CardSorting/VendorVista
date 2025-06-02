@@ -541,7 +541,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get user's cart items
-      const cartItems = await storage.getCartItems(user.id);
+      const cartItems = await storage.getCartItems(userId);
       if (cartItems.length === 0) {
         return res.status(400).json({ error: "Cart is empty" });
       }
@@ -573,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create order
       const order = await storage.createOrder({
-        userId: user.id,
+        userId: userId,
         totalAmount: totalAmount.toFixed(2),
         status: "pending",
         shippingAddress: `${shippingAddress.fullName}\n${shippingAddress.addressLine1}\n${shippingAddress.addressLine2 || ''}\n${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.postalCode}\n${shippingAddress.country}`
@@ -590,7 +590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Clear cart
-      await storage.clearCart(user.id);
+      await storage.clearCart(userId);
 
       res.json(order);
     } catch (error) {
@@ -598,11 +598,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/orders/:id/payment", async (req, res) => {
+  app.post("/api/orders/:id/payment", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
 
       const orderId = parseInt(req.params.id);
       const order = await storage.getOrder(orderId);
@@ -624,11 +621,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/orders/:id/confirm", async (req, res) => {
+  app.post("/api/orders/:id/confirm", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
 
       const orderId = parseInt(req.params.id);
       const { paymentIntentId } = req.body;
