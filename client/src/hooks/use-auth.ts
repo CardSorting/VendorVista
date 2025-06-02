@@ -43,7 +43,7 @@ export function useAuth() {
         .then(async (response) => {
           if (response.ok) {
             const userData = await response.json();
-            return userData.user;
+            return userData;
           }
           return null;
         })
