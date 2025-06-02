@@ -1,6 +1,18 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, primaryKey, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// Session storage table.
+// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
 
 // RBAC Tables
 export const roles = pgTable("roles", {
@@ -29,9 +41,9 @@ export const rolePermissions = pgTable("rolePermissions", {
 }));
 
 export const userRoles = pgTable("userRoles", {
-  userId: integer("userId").notNull(),
+  userId: varchar("userId").notNull(),
   roleId: integer("roleId").notNull(),
-  assignedBy: integer("assignedBy"),
+  assignedBy: varchar("assignedBy"),
   assignedAt: timestamp("assignedAt").defaultNow(),
   expiresAt: timestamp("expiresAt"),
   isActive: boolean("isActive").default(true),
@@ -39,24 +51,24 @@ export const userRoles = pgTable("userRoles", {
   pk: primaryKey({ columns: [table.userId, table.roleId] })
 }));
 
+// User storage table.
+// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: varchar("username", { length: 50 }).notNull().unique(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  password: text("password").notNull(),
-  firstName: varchar("firstName", { length: 100 }),
-  lastName: varchar("lastName", { length: 100 }),
-  avatarUrl: text("avatarUrl"),
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
   bio: text("bio"),
   isActive: boolean("isActive").default(true),
   lastLoginAt: timestamp("lastLoginAt"),
-  createdAt: timestamp("createdAt").defaultNow(),
-  updatedAt: timestamp("updatedAt").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const artists = pgTable("artists", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
+  userId: varchar("userId").notNull(),
   displayName: varchar("displayName", { length: 100 }).notNull(),
   bio: text("bio"),
   specialties: text("specialties").array(),
@@ -110,7 +122,7 @@ export const products = pgTable("products", {
 
 export const cartItems = pgTable("cartItems", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
+  userId: varchar("userId").notNull(),
   productId: integer("productId").notNull(),
   quantity: integer("quantity").default(1),
   createdAt: timestamp("createdAt").defaultNow(),
@@ -118,7 +130,7 @@ export const cartItems = pgTable("cartItems", {
 
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
+  userId: varchar("userId").notNull(),
   totalAmount: decimal("totalAmount", { precision: 10, scale: 2 }).notNull(),
   status: varchar("status", { length: 50 }).default("pending"),
   shippingAddress: text("shippingAddress"),
@@ -136,21 +148,21 @@ export const orderItems = pgTable("orderItems", {
 
 export const follows = pgTable("follows", {
   id: serial("id").primaryKey(),
-  followerId: integer("followerId").notNull(),
+  followerId: varchar("followerId").notNull(),
   artistId: integer("artistId").notNull(),
   createdAt: timestamp("createdAt").defaultNow(),
 });
 
 export const likes = pgTable("likes", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
+  userId: varchar("userId").notNull(),
   artworkId: integer("artworkId").notNull(),
   createdAt: timestamp("createdAt").defaultNow(),
 });
 
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
+  userId: varchar("userId").notNull(),
   productId: integer("productId").notNull(),
   orderId: integer("orderId").notNull(),
   rating: integer("rating").notNull(), // 1-5 stars
@@ -164,9 +176,11 @@ export const reviews = pgTable("reviews", {
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
   createdAt: true,
+  updatedAt: true,
 });
+
+export type UpsertUser = typeof users.$inferInsert;
 
 export const insertArtistSchema = createInsertSchema(artists).omit({
   id: true,
