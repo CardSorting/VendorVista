@@ -1,0 +1,150 @@
+2025-06-02 10:59:24.41
+d0957f3b
+User
+4:59:24 PM [express] GET /api/login 302 in 111ms
+2025-06-02 10:59:27.92
+d0957f3b
+User
+file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345
+2025-06-02 10:59:27.92
+d0957f3b
+User
+o?t(o):n(u)},"cb"),s=new r(function(o,u){n=o,t=u}).catch(o=>{throw Error.captureStackTrace(
+2025-06-02 10:59:27.92
+d0957f3b
+User
+^
+2025-06-02 10:59:27.92
+d0957f3b
+User
+2025-06-02 10:59:27.92
+d0957f3b
+User
+error: column "profileImageUrl" of relation "users" does not exist
+2025-06-02 10:59:27.92
+d0957f3b
+User
+at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+2025-06-02 10:59:27.92
+d0957f3b
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-06-02 10:59:27.92
+d0957f3b
+User
+at async NeonPreparedQuery.execute (file:///home/runner/workspace/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+2025-06-02 10:59:27.92
+d0957f3b
+User
+at async DatabaseStorage.upsertUser (file:///home/runner/workspace/dist/index.js:313:20)
+2025-06-02 10:59:27.92
+d0957f3b
+User
+at async upsertUser (file:///home/runner/workspace/dist/index.js:940:3)
+2025-06-02 10:59:27.92
+d0957f3b
+User
+at async Strategy.verify [as _verify] (file:///home/runner/workspace/dist/index.js:957:5) {
+2025-06-02 10:59:27.92
+d0957f3b
+User
+length: 133,
+2025-06-02 10:59:27.92
+d0957f3b
+User
+severity: 'ERROR',
+2025-06-02 10:59:27.92
+d0957f3b
+User
+code: '42703',
+2025-06-02 10:59:27.92
+d0957f3b
+User
+detail: undefined,
+2025-06-02 10:59:27.92
+d0957f3b
+User
+hint: undefined,
+2025-06-02 10:59:27.92
+d0957f3b
+User
+position: '62',
+2025-06-02 10:59:27.92
+d0957f3b
+User
+internalPosition: undefined,
+2025-06-02 10:59:27.92
+d0957f3b
+User
+internalQuery: undefined,
+2025-06-02 10:59:27.92
+d0957f3b
+User
+where: undefined,
+2025-06-02 10:59:27.92
+d0957f3b
+User
+schema: undefined,
+2025-06-02 10:59:27.92
+d0957f3b
+User
+table: undefined,
+2025-06-02 10:59:27.92
+d0957f3b
+User
+column: undefined,
+2025-06-02 10:59:27.92
+d0957f3b
+User
+dataType: undefined,
+2025-06-02 10:59:27.92
+d0957f3b
+User
+constraint: undefined,
+2025-06-02 10:59:27.92
+d0957f3b
+User
+file: 'parse_target.c',
+2025-06-02 10:59:27.92
+d0957f3b
+User
+line: '1066',
+2025-06-02 10:59:27.92
+d0957f3b
+User
+routine: 'checkInsertTargets'
+2025-06-02 10:59:27.92
+d0957f3b
+User
+}
+2025-06-02 10:59:27.92
+d0957f3b
+User
+2025-06-02 10:59:27.92
+d0957f3b
+User
+Node.js v20.18.1
+2025-06-02 10:59:27.93
+d0957f3b
+User
+npm notice
+2025-06-02 10:59:27.93
+d0957f3b
+User
+npm notice New major version of npm available! 10.8.2 -> 11.4.1
+2025-06-02 10:59:27.93
+d0957f3b
+User
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.4.1
+2025-06-02 10:59:27.93
+d0957f3b
+User
+npm notice To update run: npm install -g npm@11.4.1
+2025-06-02 10:59:27.93
+d0957f3b
+User
+npm notice
+2025-06-02 10:59:27.94
+d0957f3b
+System
+command finished with error [npm run start]: exit status 1
