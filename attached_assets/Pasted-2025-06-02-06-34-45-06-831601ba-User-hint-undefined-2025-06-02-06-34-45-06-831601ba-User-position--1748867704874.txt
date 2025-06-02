@@ -1,0 +1,152 @@
+2025-06-02 06:34:45.06
+831601ba
+User
+hint: undefined,
+2025-06-02 06:34:45.06
+831601ba
+User
+position: undefined,
+2025-06-02 06:34:45.06
+831601ba
+User
+internalPosition: undefined,
+2025-06-02 06:34:45.06
+831601ba
+User
+internalQuery: undefined,
+2025-06-02 06:34:45.06
+831601ba
+User
+where: undefined,
+2025-06-02 06:34:45.06
+831601ba
+User
+schema: undefined,
+2025-06-02 06:34:45.06
+831601ba
+User
+table: undefined,
+2025-06-02 06:34:45.06
+831601ba
+User
+column: undefined,
+2025-06-02 06:34:45.06
+831601ba
+User
+dataType: undefined,
+2025-06-02 06:34:45.06
+831601ba
+User
+constraint: undefined,
+2025-06-02 06:34:45.06
+831601ba
+User
+file: 'plancat.c',
+2025-06-02 06:34:45.06
+831601ba
+User
+line: '915',
+2025-06-02 06:34:45.06
+831601ba
+User
+routine: 'infer_arbiter_indexes'
+2025-06-02 06:34:45.06
+831601ba
+User
+}
+2025-06-02 06:34:48.65
+831601ba
+User
+12:34:48 PM [express] GET /api/callback 302 in 47ms
+2025-06-02 06:34:48.84
+831601ba
+User
+12:34:48 PM [express] GET /api/login 302 in 92ms
+2025-06-02 06:34:48.84
+831601ba
+User
+Error: error: there is no unique or exclusion constraint matching the ON CONFLICT specification
+2025-06-02 06:34:48.84
+831601ba
+User
+at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+2025-06-02 06:34:48.84
+831601ba
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-06-02 06:34:48.84
+831601ba
+User
+at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:322:21) {
+2025-06-02 06:34:48.84
+831601ba
+User
+length: 148,
+2025-06-02 06:34:48.84
+831601ba
+User
+severity: 'ERROR',
+2025-06-02 06:34:48.84
+831601ba
+User
+code: '42P10',
+2025-06-02 06:34:48.84
+831601ba
+User
+detail: undefined,
+2025-06-02 06:34:48.84
+831601ba
+User
+hint: undefined,
+2025-06-02 06:34:48.84
+831601ba
+User
+position: undefined,
+2025-06-02 06:34:48.84
+831601ba
+User
+internalPosition: undefined,
+2025-06-02 06:34:48.84
+831601ba
+User
+internalQuery: undefined,
+2025-06-02 06:34:48.84
+831601ba
+User
+where: undefined,
+2025-06-02 06:34:48.84
+831601ba
+User
+schema: undefined,
+2025-06-02 06:34:48.84
+831601ba
+User
+table: undefined,
+2025-06-02 06:34:48.84
+831601ba
+User
+column: undefined,
+2025-06-02 06:34:48.84
+831601ba
+User
+dataType: undefined,
+2025-06-02 06:34:48.84
+831601ba
+User
+constraint: undefined,
+2025-06-02 06:34:48.84
+831601ba
+User
+file: 'plancat.c',
+2025-06-02 06:34:48.84
+831601ba
+User
+line: '915',
+2025-06-02 06:34:48.84
+831601ba
+User
+routine: 'infer_arbiter_indexes'
+2025-06-02 06:34:48.84
+831601ba
+User
+}
