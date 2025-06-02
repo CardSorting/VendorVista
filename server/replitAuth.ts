@@ -57,12 +57,15 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
+  console.log("OIDC Claims received:", JSON.stringify(claims, null, 2));
+  
   await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
-    firstName: claims["given_name"] || claims["first_name"] || "",
-    lastName: claims["family_name"] || claims["last_name"] || "",
-    avatarUrl: claims["picture"] || claims["profile_image_url"],
+    username: claims["preferred_username"] || claims["username"],
+    firstName: claims["given_name"] || claims["first_name"] || claims["name"]?.split(" ")[0] || "",
+    lastName: claims["family_name"] || claims["last_name"] || claims["name"]?.split(" ").slice(1).join(" ") || "",
+    avatarUrl: claims["picture"] || claims["profile_image_url"] || claims["avatar_url"],
   });
 }
 
