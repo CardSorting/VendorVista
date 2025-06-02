@@ -664,30 +664,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/orders", async (req, res) => {
+  app.get("/api/orders", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-
-      const auth0User = req.oidc.user;
-      const user = await storage.getUserByEmail(auth0User.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      const orders = await storage.getOrdersByUser(user.id);
+      const userId = req.user.claims.sub;
+      const orders = await storage.getOrdersByUser(userId);
       res.json(orders);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch orders" });
     }
   });
 
-  app.get("/api/orders/:id", async (req, res) => {
+  app.get("/api/orders/:id", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
 
       const orderId = parseInt(req.params.id);
       const order = await storage.getOrder(orderId);
@@ -756,31 +744,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/products/:productId/reviews", async (req, res) => {
+  app.post("/api/products/:productId/reviews", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-
-      const auth0User = req.oidc.user;
-      if (!auth0User?.email) {
-        return res.status(400).json({ error: "Invalid user data" });
-      }
-
-      const user = await storage.getUserByEmail(auth0User.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
+      const userId = req.user.claims.sub;
 
       const productId = parseInt(req.params.productId);
       const reviewData = insertReviewSchema.parse({
         ...req.body,
-        userId: user.id,
+        userId: userId,
         productId
       });
 
       // Check if user already reviewed this product
-      const existingReview = await storage.getUserReview(user.id, productId);
+      const existingReview = await storage.getUserReview(userId, productId);
       if (existingReview) {
         return res.status(400).json({ error: "You have already reviewed this product" });
       }
@@ -796,21 +772,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/reviews/:reviewId", async (req, res) => {
+  app.put("/api/reviews/:reviewId", isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.oidc.isAuthenticated()) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-
-      const auth0User = req.oidc.user;
-      if (!auth0User?.email) {
-        return res.status(400).json({ error: "Invalid user data" });
-      }
-
-      const user = await storage.getUserByEmail(auth0User.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
+      const userId = req.user.claims.sub;
 
       const reviewId = parseInt(req.params.reviewId);
       const existingReview = await storage.getReview(reviewId);
