@@ -41,6 +41,7 @@ function Router() {
             <Route path="/browse" component={ProductBrowse} />
             <Route path="/product/:productId" component={ProductDetail} />
             <Route path="/artist/:id" component={ArtistProfile} />
+            <Route path="/artist/dashboard" component={() => { window.location.href = '/seller/dashboard'; return null; }} />
             <Route path="/seller/dashboard" component={SellerDashboard} />
             <Route path="/cart" component={Cart} />
             <Route path="/checkout" component={Checkout} />
