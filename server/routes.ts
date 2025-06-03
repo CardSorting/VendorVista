@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage-replit";
-import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, insertArtworkSchema, insertProductSchema, insertCartItemSchema, insertReviewSchema, products } from "@shared/schema";
+import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, insertArtworkSchema, insertProductSchema, insertCartItemSchema, insertReviewSchema, products, users as usersTable } from "@shared/schema";
 import { z } from "zod";
 import { registerProductRoutes } from "./routes-product";
 import { registerRBACDemoRoutes } from "./routes-rbac-demo";
@@ -37,6 +37,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Admin routes
+  app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      // Get all users with their roles
+      const allUsers = await db.select({
+        id: usersTable.id,
+        email: usersTable.email,
+        username: usersTable.username,
+        firstName: usersTable.firstName,
+        lastName: usersTable.lastName,
+        createdAt: usersTable.createdAt
+      }).from(usersTable);
+
+      const usersWithRoles = await Promise.all(
+        allUsers.map(async (user) => {
+          const roles = await storage.getUserRoles(user.id);
+          return { ...user, roles };
+        })
+      );
+
+      res.json(usersWithRoles);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.post('/api/admin/users/:userId/roles', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { role } = req.body;
+
+      if (!['admin', 'seller', 'buyer'].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+
+      await storage.assignUserRole(userId, role);
+      res.json({ message: "Role assigned successfully" });
+    } catch (error) {
+      console.error("Error assigning role:", error);
+      res.status(500).json({ message: "Failed to assign role" });
+    }
+  });
+
+  app.delete('/api/admin/users/:userId/roles/:role', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { userId, role } = req.params;
+      await storage.removeUserRole(userId, role);
+      res.json({ message: "Role removed successfully" });
+    } catch (error) {
+      console.error("Error removing role:", error);
+      res.status(500).json({ message: "Failed to remove role" });
     }
   });
 
