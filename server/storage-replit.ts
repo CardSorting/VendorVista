@@ -533,34 +533,52 @@ export class DatabaseStorage implements IStorage {
 
   // Additional methods
   async getAllProductsWithDetails(): Promise<any[]> {
-    return await db
+    const results = await db
       .select({
         id: products.id,
         price: products.price,
         isActive: products.isActive,
         productTypeId: products.productTypeId,
-        productType: {
-          id: productTypes.id,
-          name: productTypes.name,
-        },
-        artwork: {
-          id: artwork.id,
-          title: artwork.title,
-          tags: artwork.tags,
-          categoryId: artwork.categoryId,
-          isTrending: artwork.isTrending,
-          artist: {
-            id: artists.id,
-            displayName: artists.displayName,
-            isVerified: artists.isVerified,
-          },
-        },
+        artworkId: products.artworkId,
+        productTypeName: productTypes.name,
+        artworkTitle: artwork.title,
+        artworkTags: artwork.tags,
+        artworkCategoryId: artwork.categoryId,
+        artworkIsTrending: artwork.isTrending,
+        artistId: artists.id,
+        artistDisplayName: artists.displayName,
+        artistIsVerified: artists.isVerified,
       })
       .from(products)
       .leftJoin(productTypes, eq(products.productTypeId, productTypes.id))
       .leftJoin(artwork, eq(products.artworkId, artwork.id))
       .leftJoin(artists, eq(artwork.artistId, artists.id))
+      .where(eq(products.isActive, true))
       .orderBy(desc(products.id));
+
+    // Transform to expected structure
+    return results.map(row => ({
+      id: row.id,
+      price: row.price,
+      isActive: row.isActive,
+      productTypeId: row.productTypeId,
+      productType: row.productTypeName ? {
+        id: row.productTypeId,
+        name: row.productTypeName,
+      } : null,
+      artwork: row.artworkTitle ? {
+        id: row.artworkId,
+        title: row.artworkTitle,
+        tags: row.artworkTags || [],
+        categoryId: row.artworkCategoryId,
+        isTrending: row.artworkIsTrending,
+        artist: row.artistDisplayName ? {
+          id: row.artistId,
+          displayName: row.artistDisplayName,
+          isVerified: row.artistIsVerified,
+        } : null,
+      } : null,
+    }));
   }
 }
 
