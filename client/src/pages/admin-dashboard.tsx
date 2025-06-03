@@ -51,9 +51,12 @@ export default function AdminDashboard() {
 
   const removeRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
-      return apiRequest(`/api/admin/users/${userId}/roles/${role}`, {
-        method: 'DELETE'
+      const response = await fetch(`/api/admin/users/${userId}/roles/${role}`, {
+        method: 'DELETE',
+        credentials: 'include'
       });
+      if (!response.ok) throw new Error('Failed to remove role');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
