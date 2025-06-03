@@ -59,7 +59,7 @@ async function upsertUser(
 ) {
   console.log("OIDC Claims received:", JSON.stringify(claims, null, 2));
   
-  await storage.upsertUser({
+  const user = await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     username: claims["preferred_username"] || claims["username"],
@@ -67,6 +67,27 @@ async function upsertUser(
     lastName: claims["family_name"] || claims["last_name"] || claims["name"]?.split(" ").slice(1).join(" ") || "",
     avatarUrl: claims["picture"] || claims["profile_image_url"] || claims["avatar_url"],
   });
+
+  // Assign default role based on user type
+  await assignDefaultRole(user.id, claims["email"]);
+}
+
+async function assignDefaultRole(userId: string, email: string) {
+  try {
+    // Check if user already has roles
+    const existingRoles = await storage.getUserRoles(userId);
+    
+    if (existingRoles.length === 0) {
+      // Determine role based on email or default to seller
+      const isAdmin = email?.includes("admin") || email?.includes("support");
+      const defaultRole = isAdmin ? "admin" : "seller";
+      
+      await storage.assignUserRole(userId, defaultRole);
+      console.log(`Assigned default role '${defaultRole}' to user ${userId}`);
+    }
+  } catch (error) {
+    console.error("Failed to assign default role:", error);
+  }
 }
 
 export async function setupAuth(app: Express) {
@@ -172,3 +193,28 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+export const requireRole = (requiredRole: string): RequestHandler => {
+  return async (req: any, res, next) => {
+    try {
+      if (!req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userId = req.user.claims.sub;
+      const userRoles = await storage.getUserRoles(userId);
+      
+      if (!userRoles.includes(requiredRole)) {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+
+      next();
+    } catch (error) {
+      console.error('Role check error:', error);
+      return res.status(500).json({ message: "Authorization error" });
+    }
+  };
+};
+
+export const requireAdmin: RequestHandler = requireRole('admin');
+export const requireSeller: RequestHandler = requireRole('seller');

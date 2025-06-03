@@ -5,7 +5,7 @@ import { insertUserSchema, registerSchema, loginSchema, insertArtistSchema, inse
 import { z } from "zod";
 import { registerProductRoutes } from "./routes-product";
 import { registerRBACDemoRoutes } from "./routes-rbac-demo";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, requireAdmin, requireSeller } from "./replitAuth";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -18,7 +18,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      res.json(user);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get user roles for RBAC
+      const roles = await storage.getUserRoles(userId);
+      const userWithRoles = {
+        ...user,
+        roles: roles
+      };
+      
+      res.json(userWithRoles);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -41,7 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Artist routes 
-  app.post("/api/artists", isAuthenticated, async (req, res) => {
+  app.post("/api/artists", isAuthenticated, requireSeller, async (req, res) => {
     try {
       const data = insertArtistSchema.parse(req.body);
       const artist = await storage.createArtist(data);
