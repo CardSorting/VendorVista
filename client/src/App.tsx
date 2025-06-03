@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Home from "@/pages/home";
 import ProductBrowse from "@/pages/product-browse";
 import ArtistProfile from "@/pages/artist-profile";
-import SellerDashboard from "@/pages/seller-dashboard";
+import SellerDashboard from "@/features/seller-dashboard/presentation/pages/SellerDashboardPage";
 import Cart from "@/pages/cart";
 import Checkout from "@/pages/checkout";
 import Orders from "@/pages/orders";

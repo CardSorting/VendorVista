@@ -4,7 +4,7 @@
  */
 
 export class UserId {
-  private constructor(private readonly value: string) {
+  constructor(private readonly value: string) {
     this.validate(value);
   }
 

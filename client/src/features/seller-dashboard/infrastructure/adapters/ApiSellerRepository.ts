@@ -138,7 +138,7 @@ export class ApiSellerRepository implements ISellerRepository {
 export class ApiSellerAnalyticsRepository implements ISellerAnalyticsRepository {
   private readonly baseUrl = '/api';
 
-  async getRevenueTrend(sellerId: string, period: 'day' | 'week' | 'month'): Promise<Array<{ date: Date; revenue: number }>> {
+  async getRevenueTrend(sellerId: string, period: 'day' | 'week' | 'month' | 'year'): Promise<Array<{ date: Date; revenue: number }>> {
     try {
       const response = await fetch(`${this.baseUrl}/analytics/revenue-trend/${sellerId}?period=${period}`);
       if (!response.ok) {

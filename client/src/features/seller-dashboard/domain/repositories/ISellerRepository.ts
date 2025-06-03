@@ -16,7 +16,7 @@ export interface ISellerRepository {
 }
 
 export interface ISellerAnalyticsRepository {
-  getRevenueTrend(sellerId: string, period: 'day' | 'week' | 'month'): Promise<Array<{ date: Date; revenue: number }>>;
+  getRevenueTrend(sellerId: string, period: 'day' | 'week' | 'month' | 'year'): Promise<Array<{ date: Date; revenue: number }>>;
   getTopProducts(sellerId: string, limit: number): Promise<Array<{ productId: string; revenue: number; sales: number }>>;
   getCustomerMetrics(sellerId: string): Promise<{ totalCustomers: number; returningCustomers: number }>;
   getConversionMetrics(sellerId: string): Promise<{ views: number; conversions: number; rate: number }>;
