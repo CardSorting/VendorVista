@@ -45,11 +45,12 @@ export default function SellerDashboardPage() {
         <div className="text-center bg-white p-8 rounded-xl shadow-sm border border-gray-200/60">
           <h2 className="text-2xl font-semibold mb-2 text-gray-900">Authentication Required</h2>
           <p className="text-gray-600 mb-6">Please sign in to access your seller dashboard</p>
-          <Link href="/auth">
-            <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-2">
-              Sign In
-            </Button>
-          </Link>
+          <Button 
+            onClick={() => window.location.href = '/api/login'}
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-2"
+          >
+            Sign In with Replit
+          </Button>
         </div>
       </div>
     );
@@ -77,19 +78,19 @@ export default function SellerDashboardPage() {
       );
     }
 
-    if (isError || !dashboardData) {
-      return (
-        <div className="text-center py-12">
-          <div className="text-gray-400 mb-4">
-            <BarChart3 className="h-12 w-12 mx-auto" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to load dashboard data</h3>
-          <p className="text-gray-600">Please check your connection and try again</p>
-        </div>
-      );
-    }
-
-    const { metrics } = dashboardData;
+    // Show basic metrics even when dashboard data isn't available
+    const metrics = dashboardData?.metrics || {
+      totalRevenue: { toDisplayString: () => '$0.00' },
+      totalOrders: 0,
+      totalProducts: 0,
+      viewCount: 0,
+      conversionRate: 0,
+      averageOrderValue: { toDisplayString: () => '$0.00' },
+      growthMetrics: {
+        revenueGrowth: 0,
+        orderGrowth: 0
+      }
+    };
 
     return (
       <div className="space-y-8">
