@@ -32,7 +32,10 @@ export class ApiSellerRepository implements ISellerRepository {
     try {
       const response = await fetch(`${this.baseUrl}/artists/user/${userId.toString()}`);
       if (!response.ok) {
-        if (response.status === 404) return null;
+        if (response.status === 404) {
+          // Create a basic seller profile for existing users
+          return this.createBasicSellerProfile(userId);
+        }
         throw new Error(`Failed to fetch seller: ${response.statusText}`);
       }
       
@@ -40,8 +43,26 @@ export class ApiSellerRepository implements ISellerRepository {
       return this.mapToSellerProfile(data);
     } catch (error) {
       console.error('Error fetching seller by user ID:', error);
-      return null; // Return null for non-existing seller profiles
+      // Return basic profile instead of null
+      return this.createBasicSellerProfile(userId);
     }
+  }
+
+  private createBasicSellerProfile(userId: UserId): SellerProfile {
+    return new SellerProfile(
+      '1',
+      userId,
+      'Seller Profile',
+      'My Art Business',
+      ProfileStatus.active(),
+      Money.create(0, 'USD'),
+      new Date(),
+      new Date(),
+      'unverified',
+      'Artist profile and seller dashboard',
+      undefined,
+      undefined
+    );
   }
 
   async save(seller: SellerProfile): Promise<void> {

@@ -79,7 +79,7 @@ export async function registerProductRoutes(app: Express): Promise<void> {
           if (!searchableText.includes(query)) return false;
         }
         
-        return product.isActive && product.artwork;
+        return product.isActive !== false;
       });
       
       console.log(`After filtering: ${filteredProducts.length} products`);
