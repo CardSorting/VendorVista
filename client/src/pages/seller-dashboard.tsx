@@ -72,13 +72,13 @@ export default function SellerDashboard() {
 
   // Fetch real data from database
   const { data: artist } = useQuery({
-    queryKey: ["/api/artists/user", user?.id],
+    queryKey: [`/api/artists/user/${user?.id}`],
     enabled: !!user?.id,
   });
 
   const { data: artwork = [] } = useQuery({
-    queryKey: ["/api/artwork/artist"],
-    enabled: !!artist,
+    queryKey: [`/api/artwork/artist/${artist?.id}`],
+    enabled: !!artist?.id,
   });
 
   const { data: allProducts = [] } = useQuery({
@@ -87,7 +87,7 @@ export default function SellerDashboard() {
   });
 
   const { data: orders = [] } = useQuery({
-    queryKey: [`/api/orders/user/${user?.id}`],
+    queryKey: ["/api/orders"],
     enabled: !!user?.id,
   });
 

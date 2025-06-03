@@ -178,6 +178,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Artwork routes
+  app.get("/api/artwork/artist", async (req, res) => {
+    try {
+      const artwork = await storage.getArtworkList();
+      res.json(artwork);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch artwork" });
+    }
+  });
+
+  app.get("/api/artwork/artist/:artistId", async (req, res) => {
+    try {
+      const artistId = parseInt(req.params.artistId);
+      const artwork = await storage.getArtworkByArtist(artistId);
+      res.json(artwork);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch artist artwork" });
+    }
+  });
+
+  app.get("/api/artwork/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const artwork = await storage.getArtwork(id);
+      if (!artwork) {
+        return res.status(404).json({ message: "Artwork not found" });
+      }
+      res.json(artwork);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch artwork" });
+    }
+  });
+
+  app.post("/api/artwork", isAuthenticated, async (req, res) => {
+    try {
+      const data = insertArtworkSchema.parse(req.body);
+      const artwork = await storage.createArtwork(data);
+      res.json(artwork);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create artwork" });
+    }
+  });
+
 
 
   // Product routes
