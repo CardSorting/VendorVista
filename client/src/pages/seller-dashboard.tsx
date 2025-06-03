@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { 
   Home, ShoppingBag, Package, Users, BarChart3, Settings, Plus, 
@@ -61,14 +61,14 @@ export default function SellerDashboard() {
     );
   }
 
-  const navigationItems = [
+  const navigationItems = useMemo(() => [
     { id: "home", label: "Home", icon: Home, active: activeView === "home" },
     { id: "orders", label: "Orders", icon: ShoppingBag, active: activeView === "orders" },
     { id: "products", label: "Products", icon: Package, active: activeView === "products" },
     { id: "customers", label: "Customers", icon: Users, active: activeView === "customers" },
     { id: "analytics", label: "Analytics", icon: BarChart3, active: activeView === "analytics" },
     { id: "settings", label: "Settings", icon: Settings, active: activeView === "settings" }
-  ];
+  ], [activeView]);
 
   // Fetch real data from database
   const { data: artist } = useQuery({
@@ -92,48 +92,56 @@ export default function SellerDashboard() {
   });
 
   // Calculate real statistics from data
-  const ordersArray = Array.isArray(orders) ? orders as any[] : [];
-  const artworkArray = Array.isArray(artwork) ? artwork as any[] : [];
-  const productsArray = Array.isArray(allProducts) ? allProducts as any[] : [];
+  const stats = useMemo(() => {
+    const ordersArray = Array.isArray(orders) ? orders as any[] : [];
+    const artworkArray = Array.isArray(artwork) ? artwork as any[] : [];
+    const productsArray = Array.isArray(allProducts) ? allProducts as any[] : [];
 
-  const totalSales = ordersArray.reduce((sum: number, order: any) => sum + (parseFloat(order.totalAmount) || 0), 0);
-  const totalOrders = ordersArray.length;
-  const totalProducts = artworkArray.length;
-  const totalViews = artworkArray.reduce((sum: number, art: any) => sum + (art.viewCount || 0), 0);
-  const totalProductSales = productsArray.reduce((sum: number, product: any) => sum + (product.sales || 0), 0);
-  const conversionRate = totalViews > 0 ? ((totalProductSales / totalViews) * 100) : 0;
-  const avgOrderValue = totalOrders > 0 ? (totalSales / totalOrders) : 0;
+    const totalSales = ordersArray.reduce((sum: number, order: any) => sum + (parseFloat(order.totalAmount) || 0), 0);
+    const totalOrders = ordersArray.length;
+    const totalProducts = artworkArray.length;
+    const totalViews = artworkArray.reduce((sum: number, art: any) => sum + (art.viewCount || 0), 0);
+    const totalProductSales = productsArray.reduce((sum: number, product: any) => sum + (product.sales || 0), 0);
+    const conversionRate = totalViews > 0 ? ((totalProductSales / totalViews) * 100) : 0;
+    const avgOrderValue = totalOrders > 0 ? (totalSales / totalOrders) : 0;
 
-  const stats: DashboardStats = {
-    totalSales,
-    totalOrders,
-    totalProducts,
-    totalViews,
-    conversionRate: Number(conversionRate.toFixed(1)),
-    avgOrderValue: Number(avgOrderValue.toFixed(2))
-  };
+    return {
+      totalSales,
+      totalOrders,
+      totalProducts,
+      totalViews,
+      conversionRate: Number(conversionRate.toFixed(1)),
+      avgOrderValue: Number(avgOrderValue.toFixed(2))
+    };
+  }, [orders, artwork, allProducts]);
 
   // Format recent orders from database
-  const recentOrders: RecentOrder[] = ordersArray
-    .slice(0, 5)
-    .map((order: any) => ({
-      id: order.id,
-      customerName: order.customerName || "Customer",
-      total: parseFloat(order.totalAmount) || 0,
-      status: order.status || "pending",
-      date: order.createdAt ? format(new Date(order.createdAt), 'MMM dd, yyyy') : "Recent",
-      items: 1 // Will be enhanced when we have order items data
-    }));
+  const recentOrders = useMemo(() => {
+    const ordersArray = Array.isArray(orders) ? orders as any[] : [];
+    return ordersArray
+      .slice(0, 5)
+      .map((order: any) => ({
+        id: order.id,
+        customerName: order.customerName || "Customer",
+        total: parseFloat(order.totalAmount) || 0,
+        status: order.status || "pending",
+        date: order.createdAt ? format(new Date(order.createdAt), 'MMM dd, yyyy') : "Recent",
+        items: 1
+      }));
+  }, [orders]);
 
   // Format products from database  
-  const productList: Product[] = productsArray.map((product: any) => ({
-    id: product.id,
-    name: product.name || "Product",
-    price: parseFloat(product.price) || 0,
-    status: product.isActive ? "active" : "inactive",
-    inventory: product.inventory || 0,
-    sales: product.sales || 0
-  }));
+  const productList = useMemo(() => {
+    const productsArray = Array.isArray(allProducts) ? allProducts as any[] : [];
+    return productsArray.map((product: any) => ({
+      id: product.id,
+      name: product.name || "Product",
+      price: parseFloat(product.price) || 0,
+      status: product.isActive ? "active" : "inactive",
+      inventory: product.inventory || 0,
+      sales: product.sales || 0
+    }));
+  }, [allProducts]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
