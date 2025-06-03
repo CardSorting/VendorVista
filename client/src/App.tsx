@@ -41,7 +41,7 @@ function Router() {
             <Route path="/browse" component={ProductBrowse} />
             <Route path="/product/:productId" component={ProductDetail} />
             <Route path="/artist/:id" component={ArtistProfile} />
-            <Route path="/artist/dashboard" component={SellerDashboard} />
+            <Route path="/seller/dashboard" component={SellerDashboard} />
             <Route path="/cart" component={Cart} />
             <Route path="/checkout" component={Checkout} />
             <Route path="/orders" component={Orders} />

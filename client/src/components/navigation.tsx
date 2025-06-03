@@ -117,7 +117,7 @@ export function Navigation() {
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/artist/dashboard">Seller Dashboard</Link>
+                      <Link href="/seller/dashboard">Seller Dashboard</Link>
                     </DropdownMenuItem>
                   </>
                   
@@ -183,11 +183,9 @@ export function Navigation() {
                           <Link href="/cart" className="text-lg font-medium">
                             Cart {cartCount > 0 && `(${cartCount})`}
                           </Link>
-                          {user?.isArtist && (
-                            <Link href="/artist/dashboard" className="text-lg font-medium">
-                              Artist Dashboard
-                            </Link>
-                          )}
+                          <Link href="/seller/dashboard" className="text-lg font-medium">
+                            Seller Dashboard
+                          </Link>
                           <Button 
                             onClick={logout} 
                             variant="ghost" 

@@ -186,25 +186,23 @@ export default function Profile() {
                 </CardContent>
               </Card>
 
-              {/* Artist Dashboard (if applicable) */}
-              {user?.isArtist && (
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/artist/dashboard')}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-purple-100 rounded-lg">
-                          <User className="h-6 w-6 text-purple-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">Artist Dashboard</h3>
-                          <p className="text-sm text-gray-600">Manage your artwork and sales</p>
-                        </div>
+              {/* Seller Dashboard (available to all authenticated users) */}
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/seller/dashboard')}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <User className="h-6 w-6 text-green-600" />
                       </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Seller Dashboard</h3>
+                        <p className="text-sm text-gray-600">Manage your products and sales</p>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Profile Information Section */}
