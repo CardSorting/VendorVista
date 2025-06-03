@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Home from "@/pages/home";
 import ProductBrowse from "@/pages/product-browse";
 import ArtistProfile from "@/pages/artist-profile";
-import ArtistDashboard from "@/pages/artist-dashboard";
+import SellerDashboard from "@/pages/seller-dashboard";
 import Cart from "@/pages/cart";
 import Checkout from "@/pages/checkout";
 import Orders from "@/pages/orders";
@@ -41,7 +41,7 @@ function Router() {
             <Route path="/browse" component={ProductBrowse} />
             <Route path="/product/:productId" component={ProductDetail} />
             <Route path="/artist/:id" component={ArtistProfile} />
-            <Route path="/artist/dashboard" component={ArtistDashboard} />
+            <Route path="/artist/dashboard" component={SellerDashboard} />
             <Route path="/cart" component={Cart} />
             <Route path="/checkout" component={Checkout} />
             <Route path="/orders" component={Orders} />
