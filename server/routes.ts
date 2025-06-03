@@ -6,10 +6,14 @@ import { z } from "zod";
 import { registerProductRoutes } from "./routes-product";
 import { registerRBACDemoRoutes } from "./routes-rbac-demo";
 import { setupAuth, isAuthenticated, requireAdmin, requireSeller } from "./replitAuth";
+import { seedRBAC } from "./seed-rbac";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize RBAC system
+  await seedRBAC();
+  
   // Auth middleware
   await setupAuth(app);
 

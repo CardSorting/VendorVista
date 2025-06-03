@@ -204,7 +204,7 @@ export const requireRole = (requiredRole: string): RequestHandler => {
       const userId = req.user.claims.sub;
       const userRoles = await storage.getUserRoles(userId);
       
-      if (!userRoles.includes(requiredRole)) {
+      if (!userRoles.includes(requiredRole as any)) {
         return res.status(403).json({ message: "Insufficient permissions" });
       }
 

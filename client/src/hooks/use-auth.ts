@@ -1,13 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { User } from "@shared/schema";
 
+interface UserWithRoles extends User {
+  roles?: string[];
+}
+
 // Global cache to prevent multiple simultaneous auth checks
-let authCache: { user: User | null; timestamp: number } | null = null;
-let activeAuthRequest: Promise<User | null> | null = null;
+let authCache: { user: UserWithRoles | null; timestamp: number } | null = null;
+let activeAuthRequest: Promise<UserWithRoles | null> | null = null;
 const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserWithRoles | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const hasCheckedAuth = useRef(false);
 
@@ -79,7 +83,7 @@ export function useAuth() {
     window.location.href = "/api/logout";
   };
 
-  const updateUser = (updates: Partial<User>) => {
+  const updateUser = (updates: Partial<UserWithRoles>) => {
     if (user) {
       const updatedUser = { ...user, ...updates };
       setUser(updatedUser);
@@ -91,6 +95,14 @@ export function useAuth() {
     }
   };
 
+  const hasRole = (role: string): boolean => {
+    return user?.roles?.includes(role) || false;
+  };
+
+  const isAdmin = (): boolean => hasRole('admin');
+  const isSeller = (): boolean => hasRole('seller');
+  const isBuyer = (): boolean => hasRole('buyer');
+
   return {
     user,
     isLoading,
@@ -98,5 +110,9 @@ export function useAuth() {
     login,
     logout,
     updateUser,
+    hasRole,
+    isAdmin,
+    isSeller,
+    isBuyer,
   };
 }
