@@ -18,7 +18,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 export function Navigation() {
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useLocation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin, isSeller } = useAuth();
   const { cartCount } = useCart();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -103,18 +103,34 @@ export function Navigation() {
                   <DropdownMenuItem asChild>
                     <Link href="/orders">Your Orders</Link>
                   </DropdownMenuItem>
-                  {user?.isArtist && (
+                  
+                  {/* Role-based navigation */}
+                  {user?.roles && user.roles.length > 0 && (
+                    <div className="px-2 py-1">
+                      <div className="text-xs text-gray-500 font-medium">
+                        Role: {user.roles.join(', ')}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {isSeller() && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link href="/artist/dashboard">Artist Dashboard</Link>
+                        <Link href="/artist/dashboard">Seller Dashboard</Link>
                       </DropdownMenuItem>
                     </>
                   )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin">Admin Panel</Link>
-                  </DropdownMenuItem>
+                  
+                  {isAdmin() && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin">Admin Panel</Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout}>
                     Sign Out
