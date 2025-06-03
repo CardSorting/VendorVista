@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 
 interface DashboardStats {
   totalSales: number;
@@ -68,29 +70,70 @@ export default function SellerDashboard() {
     { id: "settings", label: "Settings", icon: Settings, active: activeView === "settings" }
   ];
 
-  // Mock data - in real app, these would come from API
+  // Fetch real data from database
+  const { data: artist } = useQuery({
+    queryKey: ["/api/artists/user", user?.id],
+    enabled: !!user?.id,
+  });
+
+  const { data: artwork = [] } = useQuery({
+    queryKey: ["/api/artwork/artist"],
+    enabled: !!artist,
+  });
+
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ["/api/products"],
+    enabled: !!user?.id,
+  });
+
+  const { data: orders = [] } = useQuery({
+    queryKey: [`/api/orders/user/${user?.id}`],
+    enabled: !!user?.id,
+  });
+
+  // Calculate real statistics from data
+  const ordersArray = Array.isArray(orders) ? orders as any[] : [];
+  const artworkArray = Array.isArray(artwork) ? artwork as any[] : [];
+  const productsArray = Array.isArray(allProducts) ? allProducts as any[] : [];
+
+  const totalSales = ordersArray.reduce((sum: number, order: any) => sum + (parseFloat(order.totalAmount) || 0), 0);
+  const totalOrders = ordersArray.length;
+  const totalProducts = artworkArray.length;
+  const totalViews = artworkArray.reduce((sum: number, art: any) => sum + (art.viewCount || 0), 0);
+  const totalProductSales = productsArray.reduce((sum: number, product: any) => sum + (product.sales || 0), 0);
+  const conversionRate = totalViews > 0 ? ((totalProductSales / totalViews) * 100) : 0;
+  const avgOrderValue = totalOrders > 0 ? (totalSales / totalOrders) : 0;
+
   const stats: DashboardStats = {
-    totalSales: 12847.50,
-    totalOrders: 89,
-    totalProducts: 24,
-    totalViews: 2456,
-    conversionRate: 3.6,
-    avgOrderValue: 144.35
+    totalSales,
+    totalOrders,
+    totalProducts,
+    totalViews,
+    conversionRate: Number(conversionRate.toFixed(1)),
+    avgOrderValue: Number(avgOrderValue.toFixed(2))
   };
 
-  const recentOrders: RecentOrder[] = [
-    { id: 1001, customerName: "Alex Johnson", total: 89.99, status: "fulfilled", date: "2 hours ago", items: 2 },
-    { id: 1002, customerName: "Sarah Wilson", total: 156.50, status: "pending", date: "5 hours ago", items: 1 },
-    { id: 1003, customerName: "Mike Chen", total: 234.75, status: "shipped", date: "1 day ago", items: 3 },
-    { id: 1004, customerName: "Emma Davis", total: 67.25, status: "fulfilled", date: "2 days ago", items: 1 }
-  ];
+  // Format recent orders from database
+  const recentOrders: RecentOrder[] = ordersArray
+    .slice(0, 5)
+    .map((order: any) => ({
+      id: order.id,
+      customerName: order.customerName || "Customer",
+      total: parseFloat(order.totalAmount) || 0,
+      status: order.status || "pending",
+      date: order.createdAt ? format(new Date(order.createdAt), 'MMM dd, yyyy') : "Recent",
+      items: 1 // Will be enhanced when we have order items data
+    }));
 
-  const products: Product[] = [
-    { id: 1, name: "Digital Art Print", price: 29.99, status: "active", inventory: 25, sales: 45 },
-    { id: 2, name: "Custom Portrait", price: 89.99, status: "active", inventory: 10, sales: 23 },
-    { id: 3, name: "Abstract Canvas", price: 159.99, status: "draft", inventory: 5, sales: 12 },
-    { id: 4, name: "Photo Collection", price: 49.99, status: "active", inventory: 0, sales: 67 }
-  ];
+  // Format products from database  
+  const productList: Product[] = productsArray.map((product: any) => ({
+    id: product.id,
+    name: product.name || "Product",
+    price: parseFloat(product.price) || 0,
+    status: product.isActive ? "active" : "inactive",
+    inventory: product.inventory || 0,
+    sales: product.sales || 0
+  }));
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -174,7 +217,7 @@ export default function SellerDashboard() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Products</p>
                 <p className="text-3xl font-bold text-gray-900">{stats.totalProducts}</p>
-                <p className="text-sm text-gray-600 mt-1">{products.filter(p => p.status === 'active').length} active</p>
+                <p className="text-sm text-gray-600 mt-1">{productList.filter(p => p.status === 'active').length} active</p>
               </div>
               <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
                 <Package className="h-6 w-6 text-purple-600" />
@@ -293,35 +336,47 @@ export default function SellerDashboard() {
       <Card>
         <CardContent className="p-6">
           <div className="space-y-4">
-            {products.map((product) => (
-              <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <Package className="h-6 w-6 text-gray-600" />
+            {productList.length > 0 ? (
+              productList.map((product) => (
+                <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                  <div className="flex items-center space-x-4">
+                    <div className="h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <Package className="h-6 w-6 text-gray-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{product.name}</p>
+                      <p className="text-sm text-gray-600">${product.price}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{product.name}</p>
-                    <p className="text-sm text-gray-600">${product.price}</p>
+                  <div className="text-center">
+                    <p className="font-medium text-gray-900">{product.inventory}</p>
+                    <p className="text-sm text-gray-600">in stock</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-medium text-gray-900">{product.sales}</p>
+                    <p className="text-sm text-gray-600">sold</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge className={getStatusColor(product.status)}>
+                      {product.status}
+                    </Badge>
+                    {product.inventory === 0 && (
+                      <p className="text-sm text-red-600 mt-1">Out of stock</p>
+                    )}
                   </div>
                 </div>
-                <div className="text-center">
-                  <p className="font-medium text-gray-900">{product.inventory}</p>
-                  <p className="text-sm text-gray-600">in stock</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-medium text-gray-900">{product.sales}</p>
-                  <p className="text-sm text-gray-600">sold</p>
-                </div>
-                <div className="text-right">
-                  <Badge className={getStatusColor(product.status)}>
-                    {product.status}
-                  </Badge>
-                  {product.inventory === 0 && (
-                    <p className="text-sm text-red-600 mt-1">Out of stock</p>
-                  )}
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No products yet</h3>
+                <p className="text-gray-600 mb-4">Start by adding your first product</p>
+                <Button className="bg-green-600 hover:bg-green-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Product
+                </Button>
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
