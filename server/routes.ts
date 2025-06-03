@@ -111,7 +111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Artist routes 
-  app.post("/api/artists", isAuthenticated, requireSeller, async (req, res) => {
+  app.post("/api/artists", isAuthenticated, async (req, res) => {
     try {
       const data = insertArtistSchema.parse(req.body);
       const artist = await storage.createArtist(data);

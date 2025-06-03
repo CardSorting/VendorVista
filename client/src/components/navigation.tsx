@@ -113,14 +113,13 @@ export function Navigation() {
                     </div>
                   )}
                   
-                  {isSeller() && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/artist/dashboard">Seller Dashboard</Link>
-                      </DropdownMenuItem>
-                    </>
-                  )}
+                  {/* All authenticated users can access seller dashboard */}
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/artist/dashboard">Seller Dashboard</Link>
+                    </DropdownMenuItem>
+                  </>
                   
                   {isAdmin() && (
                     <>
